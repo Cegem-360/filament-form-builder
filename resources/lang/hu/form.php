@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'resource' => [
+        'form_singular' => 'Űrlap',
+        'form_plural' => 'Űrlapok',
+        'submission_singular' => 'Űrlap beküldés',
+        'submission_plural' => 'Űrlap beküldések',
+    ],
+    'sections' => [
+        'form_details' => 'Űrlap részletei',
+        'form_fields' => 'Mezők',
+        'submission_settings' => 'Beküldés beállításai',
+        'submission_actions' => 'Beküldési akciók',
+        'submission_details' => 'Beküldés részletei',
+        'submitted_data' => 'Beküldött adatok',
+        'embed_direct' => 'Közvetlen link',
+        'embed_widget' => 'JavaScript widget (ajánlott)',
+        'embed_iframe' => 'Iframe beágyazás',
+    ],
+    'fields' => [
+        'name' => 'Név',
+        'slug' => 'Slug',
+        'description' => 'Leírás',
+        'active' => 'Aktív',
+        'field_name' => 'Mező neve',
+        'field_type' => 'Mező típusa',
+        'required' => 'Kötelező',
+        'placeholder' => 'Placeholder',
+        'thank_you_message' => 'Köszönő üzenet',
+        'redirect_url' => 'Átirányítási URL',
+        'save_submissions' => 'Űrlap beküldések mentése',
+        'create_lead_if_email' => 'Lead létrehozása, ha van email',
+        'notify_emails' => 'Értesítendő email címek',
+        'add_email' => 'Email cím hozzáadása',
+        'form' => 'Űrlap',
+        'data' => 'Adatok',
+        'lead' => 'Lead',
+        'ip_address' => 'IP cím',
+        'user_agent' => 'User Agent',
+        'submitted_at' => 'Beküldve',
+        'submissions_count' => 'Beküldések száma',
+        'created_at' => 'Létrehozva',
+    ],
+    'actions' => [
+        'embed_code' => 'Beágyazó kód',
+        'close' => 'Bezárás',
+    ],
+    'embed' => [
+        'direct_desc' => 'Oszd meg ezt a linket, hogy az űrlap önálló oldalon megnyíljon.',
+        'widget_desc' => 'Másold be ezt a kódot bármely weboldalba. A widget automatikusan átméretezi magát és kezeli az átirányításokat.',
+        'iframe_desc' => 'Másold be ezt a kódot a weboldaladba az űrlap beágyazásához.',
+    ],
+    'errors' => [
+        'not_found' => 'Az űrlap nem található',
+        'rate_limit' => 'Túl sok beküldés. Próbáld újra :seconds másodperc múlva.',
+    ],
+    'thank_you' => 'Köszönjük!',
+    'submission_received' => 'A beküldésed megkaptuk.',
+    'submit' => 'Küldés',
+    'submitting' => 'Küldés...',
+    'select_option' => 'Válassz egy opciót',
+];

@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'resource' => [
+        'form_singular' => 'Form',
+        'form_plural' => 'Forms',
+        'submission_singular' => 'Form Submission',
+        'submission_plural' => 'Form Submissions',
+    ],
+    'sections' => [
+        'form_details' => 'Form Details',
+        'form_fields' => 'Form Fields',
+        'submission_settings' => 'Submission Settings',
+        'submission_actions' => 'Submission Actions',
+        'submission_details' => 'Submission Details',
+        'submitted_data' => 'Submitted Data',
+        'embed_direct' => 'Direct link',
+        'embed_widget' => 'JavaScript widget (recommended)',
+        'embed_iframe' => 'Iframe embed',
+    ],
+    'fields' => [
+        'name' => 'Name',
+        'slug' => 'Slug',
+        'description' => 'Description',
+        'active' => 'Active',
+        'field_name' => 'Field Name',
+        'field_type' => 'Field Type',
+        'required' => 'Required',
+        'placeholder' => 'Placeholder',
+        'thank_you_message' => 'Thank You Message',
+        'redirect_url' => 'Redirect URL',
+        'save_submissions' => 'Save form submissions',
+        'create_lead_if_email' => 'Create Lead if email is provided',
+        'notify_emails' => 'Notify these email addresses on submission',
+        'add_email' => 'Add email address',
+        'form' => 'Form',
+        'data' => 'Data',
+        'lead' => 'Lead',
+        'ip_address' => 'IP Address',
+        'user_agent' => 'User Agent',
+        'submitted_at' => 'Submitted At',
+        'submissions_count' => 'Submissions Count',
+        'created_at' => 'Created At',
+    ],
+    'actions' => [
+        'embed_code' => 'Embed Code',
+        'close' => 'Close',
+    ],
+    'embed' => [
+        'direct_desc' => 'Share this link to open the form in a standalone page.',
+        'widget_desc' => 'Copy and paste this snippet into any website to embed the form. The widget auto-resizes and handles redirects.',
+        'iframe_desc' => 'Copy and paste this code into your website to embed the form.',
+    ],
+    'errors' => [
+        'not_found' => 'Form not found',
+        'rate_limit' => 'Too many submissions. Please try again in :seconds seconds.',
+    ],
+    'thank_you' => 'Thank you!',
+    'submission_received' => 'Your submission has been received.',
+    'submit' => 'Submit',
+    'submitting' => 'Submitting...',
+    'select_option' => 'Select an option',
+];

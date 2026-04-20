@@ -1,0 +1,62 @@
+{
+    "name": "madbox-99/filament-form-builder",
+    "description": "Embeddable form builder for Laravel with a Filament v5 admin panel. Drop a JS snippet into any HTML page and collect form submissions through the Filament admin.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "filament",
+        "filament-plugin",
+        "forms",
+        "form-builder",
+        "embeddable",
+        "wordpress",
+        "lead-generation"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Zoltán Tamás Szabó",
+            "email": "zoli.szabok@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^11.0 || ^12.0 || ^13.0",
+        "filament/filament": "^4.0 || ^5.0",
+        "livewire/livewire": "^3.0 || ^4.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "pestphp/pest": "^3.0 || ^4.0",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Madbox99\\FilamentFormBuilder\\": "src/",
+            "Madbox99\\FilamentFormBuilder\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Madbox99\\FilamentFormBuilder\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Madbox99\\FilamentFormBuilder\\FilamentFormBuilderServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "lint": "pint"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
