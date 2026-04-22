@@ -235,16 +235,13 @@ final readonly class FormFieldBlueprint
 
     private static function numericOrNull(mixed $value): int|float|null
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
         if (! is_numeric($value)) {
             return null;
         }
 
-        $number = $value + 0;
+        $float = (float) $value;
+        $int = (int) $float;
 
-        return is_int($number) ? (int) $number : (float) $number;
+        return ((float) $int) === $float ? $int : $float;
     }
 }
