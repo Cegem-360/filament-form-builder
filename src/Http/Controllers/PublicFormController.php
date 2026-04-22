@@ -31,8 +31,10 @@ final class PublicFormController extends Controller
         ])->render();
 
         return new Response($content, 200, [
-            'X-Frame-Options' => 'ALLOWALL',
-            'Content-Security-Policy' => 'frame-ancestors *',
+            'Content-Security-Policy' => $this->embedCsp(),
+            'X-Content-Type-Options' => 'nosniff',
+            'Referrer-Policy' => 'no-referrer-when-downgrade',
+            'Permissions-Policy' => 'geolocation=(), microphone=(), camera=()',
         ]);
     }
 
@@ -48,5 +50,28 @@ final class PublicFormController extends Controller
         }
 
         return $form;
+    }
+
+    private function embedCsp(): string
+    {
+        $frameAncestors = trim((string) config('filament-form-builder.embed.frame_ancestors', '*'));
+        if ($frameAncestors === '') {
+            $frameAncestors = "'self'";
+        }
+
+        // `'unsafe-inline'` is required for Livewire's inline snapshot/init
+        // scripts and for the per-form custom CSS. Scoped via frame-ancestors
+        // and the iframe sandbox on the widget side.
+        return implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data:",
+            "font-src 'self' data:",
+            "connect-src 'self'",
+            "form-action 'self'",
+            "base-uri 'self'",
+            'frame-ancestors '.$frameAncestors,
+        ]);
     }
 }

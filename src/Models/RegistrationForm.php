@@ -18,6 +18,7 @@ class RegistrationForm extends Model
 {
     /** @use HasFactory<RegistrationFormFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $table = 'registration_forms';
@@ -80,7 +81,7 @@ class RegistrationForm extends Model
     public function getWidgetSnippet(): string
     {
         return sprintf(
-            '<div id="marketinghub-form-%s"></div>' . "\n" . '<script src="%s" data-form="%s" async></script>',
+            '<div id="ffb-form-%s"></div>'."\n".'<script src="%s" data-form="%s" async></script>',
             $this->slug,
             $this->getWidgetScriptUrl(),
             $this->slug,

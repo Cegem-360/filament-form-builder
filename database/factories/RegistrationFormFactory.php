@@ -6,6 +6,7 @@ namespace Madbox99\FilamentFormBuilder\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
+use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
 
 /**
  * @extends Factory<RegistrationForm>
@@ -27,9 +28,27 @@ final class RegistrationFormFactory extends Factory
             'slug' => fake()->unique()->slug(),
             'description' => fake()->sentence(),
             'fields' => [
-                ['name' => 'name', 'type' => 'text', 'required' => true],
-                ['name' => 'email', 'type' => 'email', 'required' => true],
+                [
+                    'type' => FormFieldBlueprint::TYPE_TEXT,
+                    'data' => [
+                        'label' => 'Name',
+                        'name' => 'name',
+                        'placeholder' => '',
+                        'required' => true,
+                        'max_length' => 255,
+                    ],
+                ],
+                [
+                    'type' => FormFieldBlueprint::TYPE_EMAIL,
+                    'data' => [
+                        'label' => 'Email',
+                        'name' => 'email',
+                        'placeholder' => '',
+                        'required' => true,
+                    ],
+                ],
             ],
+            'custom_css' => null,
             'thank_you_message' => fake()->sentence(),
             'redirect_url' => null,
             'is_active' => true,

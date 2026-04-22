@@ -4,14 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="noindex, nofollow">
 
     <title>{{ $form->name }}</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    @include('filament-form-builder::partials.base-styles')
     @livewireStyles
 </head>
-<body class="bg-transparent antialiased" data-marketinghub-embed>
-    <div class="px-4 py-6" id="marketinghub-embed-root">
+<body class="ffb-body" data-ffb-embed>
+    <div id="ffb-embed-root" class="ffb-embed-wrapper">
         <livewire:filament-form-builder.public-registration-form :form="$form" />
     </div>
 
@@ -41,7 +42,7 @@
                     lastHeight = height;
 
                     window.parent.postMessage({
-                        type: 'marketinghub:resize',
+                        type: 'ffb:resize',
                         height: height
                     }, '*');
                 } catch (error) {
@@ -52,7 +53,7 @@
             function sendRedirect(url) {
                 try {
                     window.parent.postMessage({
-                        type: 'marketinghub:redirect',
+                        type: 'ffb:redirect',
                         url: url
                     }, '*');
                 } catch (error) {
@@ -60,7 +61,7 @@
                 }
             }
 
-            var root = document.getElementById('marketinghub-embed-root') || document.body;
+            var root = document.getElementById('ffb-embed-root') || document.body;
 
             if (typeof ResizeObserver !== 'undefined') {
                 new ResizeObserver(sendHeight).observe(root);
@@ -75,12 +76,21 @@
 
             sendHeight();
 
-            document.addEventListener('marketinghub:redirect', function (event) {
+            // Listen on both document and window so the bridge works regardless
+            // of where the CustomEvent is dispatched from.
+            function handleRedirectEvent(event) {
                 if (event && event.detail && typeof event.detail.url === 'string') {
                     sendRedirect(event.detail.url);
                 }
-            }, false);
+            }
+
+            document.addEventListener('ffb:redirect', handleRedirectEvent, false);
+            window.addEventListener('ffb:redirect', handleRedirectEvent, false);
         })();
     </script>
+    <style>
+        body.ffb-body { margin: 0; padding: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+        .ffb-embed-wrapper { padding: 1rem; }
+    </style>
 </body>
 </html>

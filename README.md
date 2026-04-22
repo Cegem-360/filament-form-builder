@@ -48,7 +48,7 @@ From the form edit page, copy one of three snippets:
 
 **JS widget** (recommended — auto-resizes, handles redirects):
 ```html
-<div id="marketinghub-form-{slug}"></div>
+<div id="ffb-form-{slug}"></div>
 <script src="https://your-app.test/forms/embed.js" data-form="{slug}" async></script>
 ```
 

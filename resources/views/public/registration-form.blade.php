@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $form->name }} - {{ config('app.name') }}</title>
+    <title>{{ $form->name }} @if (config('app.name')) - {{ config('app.name') }} @endif</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    @include('filament-form-builder::partials.base-styles')
     @livewireStyles
+
+    <style>
+        body.ffb-body { margin: 0; padding: 0; background: #f8fafc; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        .ffb-page-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1rem; }
+    </style>
 </head>
-<body class="min-h-screen bg-gray-50 antialiased">
-    <div class="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+<body class="ffb-body">
+    <div class="ffb-page-wrapper">
         <livewire:filament-form-builder.public-registration-form :form="$form" />
     </div>
 

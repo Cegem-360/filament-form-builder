@@ -22,10 +22,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            // Filament Builder JSON: [{"type":"text_input","data":{...}}, ...]
             $table->json('fields');
             $table->json('submission_actions')->nullable();
             $table->text('thank_you_message')->nullable();
-            $table->string('redirect_url')->nullable();
+            $table->string('redirect_url', 2048)->nullable();
+            $table->longText('custom_css')->nullable();
             $table->boolean('is_active')->default(true);
             $table->integer('submissions_count')->default(0);
             $table->timestamps();

@@ -1,161 +1,192 @@
-<div class="w-full max-w-xl mx-auto">
+@php
+    /** @var string $containerId */
+    /** @var string $scopeSelector */
+    /** @var string $customCss */
+    /** @var list<\Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint> $blueprints */
+    /** @var string $thankYouMessage */
+    use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
+@endphp
+
+<div id="{{ $containerId }}" class="ffb-scope">
+    @if ($customCss !== '')
+        <style>{!! $customCss !!}</style>
+    @endif
+
     @if ($submitted)
-        <div class="rounded-2xl bg-white p-8 shadow-sm border border-gray-200 text-center">
-            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <div class="ffb-card ffb-card--success" role="status">
+            <div class="ffb-icon-circle" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
             </div>
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ __('filament-form-builder::form.thank_you') }}</h2>
-            <p class="text-gray-600">
-                {{ $registrationForm->thank_you_message ?? __('filament-form-builder::form.submission_received') }}
+            <h2 class="ffb-heading">{{ __('filament-form-builder::form.thank_you') }}</h2>
+            <p class="ffb-text">
+                {{ $thankYouMessage !== '' ? $thankYouMessage : __('filament-form-builder::form.submission_received') }}
             </p>
         </div>
     @else
-        <div class="rounded-2xl bg-white p-8 shadow-sm border border-gray-200">
-            <div class="mb-6">
-                <h1 class="text-2xl font-semibold text-gray-900">{{ $registrationForm->name }}</h1>
-                @if ($registrationForm->description)
-                    <p class="mt-2 text-gray-600">{{ $registrationForm->description }}</p>
+        <div class="ffb-card">
+            <div class="ffb-header">
+                <h1 class="ffb-title">{{ $formName }}</h1>
+                @if ($formDescription)
+                    <p class="ffb-description">{{ $formDescription }}</p>
                 @endif
             </div>
 
             @error('form')
-                <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+                <div class="ffb-alert ffb-alert--error" role="alert">
                     {{ $message }}
                 </div>
             @enderror
 
-            <form wire:submit="submit" class="space-y-5">
-                @foreach ($registrationForm->fields ?? [] as $field)
+            <form wire:submit="submit" class="ffb-form" novalidate>
+                {{-- Honeypot: bots fill every field; humans never see this one. --}}
+                <div class="ffb-honeypot" aria-hidden="true">
+                    <label for="{{ $containerId }}-website">Website</label>
+                    <input
+                        id="{{ $containerId }}-website"
+                        type="text"
+                        name="website"
+                        tabindex="-1"
+                        autocomplete="off"
+                        wire:model="website"
+                    />
+                </div>
+
+                @foreach ($blueprints as $blueprint)
                     @php
-                        $fieldName = \Illuminate\Support\Str::lower(\Illuminate\Support\Str::snake($field['name'] ?? ''));
-                        $fieldType = $field['type'] ?? 'text';
-                        $isRequired = !empty($field['required']);
-                        $placeholder = $field['placeholder'] ?? '';
+                        $inputId = $containerId . '-' . $blueprint->key;
                     @endphp
 
-                    <div>
-                        @if ($fieldType !== 'checkbox')
-                            <label for="field-{{ $fieldName }}" class="block text-sm font-medium text-gray-700 mb-1">
-                                {{ __($field['name']) }}
-                                @if ($isRequired)
-                                    <span class="text-red-500">*</span>
+                    <div class="ffb-field ffb-field--{{ $blueprint->type }}">
+                        @if ($blueprint->type !== FormFieldBlueprint::TYPE_CHECKBOX)
+                            <label for="{{ $inputId }}" class="ffb-label">
+                                {{ $blueprint->label }}
+                                @if ($blueprint->required)
+                                    <span class="ffb-required" aria-hidden="true">*</span>
                                 @endif
                             </label>
                         @endif
 
-                        @switch($fieldType)
-                            @case('textarea')
+                        @switch($blueprint->type)
+                            @case(FormFieldBlueprint::TYPE_TEXTAREA)
                                 <textarea
-                                    id="field-{{ $fieldName }}"
-                                    wire:model="formData.{{ $fieldName }}"
+                                    id="{{ $inputId }}"
+                                    class="ffb-input ffb-textarea"
                                     rows="4"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    placeholder="{{ $blueprint->placeholder }}"
+                                    @if ($blueprint->maxLength) maxlength="{{ $blueprint->maxLength }}" @endif
+                                    @if ($blueprint->required) required @endif
                                 ></textarea>
                                 @break
 
-                            @case('select')
+                            @case(FormFieldBlueprint::TYPE_SELECT)
                                 <select
-                                    id="field-{{ $fieldName }}"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    id="{{ $inputId }}"
+                                    class="ffb-input ffb-select"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    @if ($blueprint->required) required @endif
                                 >
                                     <option value="">{{ __('filament-form-builder::form.select_option') }}</option>
+                                    @foreach ($blueprint->options as $option)
+                                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                    @endforeach
                                 </select>
                                 @break
 
-                            @case('checkbox')
-                                <label class="inline-flex items-center gap-2">
+                            @case(FormFieldBlueprint::TYPE_CHECKBOX)
+                                <label class="ffb-checkbox-row" for="{{ $inputId }}">
                                     <input
-                                        id="field-{{ $fieldName }}"
+                                        id="{{ $inputId }}"
                                         type="checkbox"
-                                        wire:model="formData.{{ $fieldName }}"
-                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                                        class="ffb-checkbox"
+                                        wire:model.blur="formData.{{ $blueprint->key }}"
                                     />
-                                    <span class="text-sm text-gray-700">
-                                        {{ __($field['name']) }}
-                                        @if ($isRequired)
-                                            <span class="text-red-500">*</span>
+                                    <span class="ffb-checkbox-label">
+                                        {{ $blueprint->label }}
+                                        @if ($blueprint->required)
+                                            <span class="ffb-required" aria-hidden="true">*</span>
                                         @endif
                                     </span>
                                 </label>
                                 @break
 
-                            @case('date')
+                            @case(FormFieldBlueprint::TYPE_DATE)
                                 <input
-                                    id="field-{{ $fieldName }}"
+                                    id="{{ $inputId }}"
                                     type="date"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    class="ffb-input"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    @if ($blueprint->required) required @endif
                                 />
                                 @break
 
-                            @case('email')
+                            @case(FormFieldBlueprint::TYPE_EMAIL)
                                 <input
-                                    id="field-{{ $fieldName }}"
+                                    id="{{ $inputId }}"
                                     type="email"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    class="ffb-input"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    placeholder="{{ $blueprint->placeholder }}"
+                                    autocomplete="email"
+                                    inputmode="email"
+                                    @if ($blueprint->required) required @endif
                                 />
                                 @break
 
-                            @case('phone')
+                            @case(FormFieldBlueprint::TYPE_PHONE)
                                 <input
-                                    id="field-{{ $fieldName }}"
+                                    id="{{ $inputId }}"
                                     type="tel"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    class="ffb-input"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    placeholder="{{ $blueprint->placeholder }}"
+                                    autocomplete="tel"
+                                    inputmode="tel"
+                                    @if ($blueprint->required) required @endif
                                 />
                                 @break
 
-                            @case('number')
+                            @case(FormFieldBlueprint::TYPE_NUMBER)
                                 <input
-                                    id="field-{{ $fieldName }}"
+                                    id="{{ $inputId }}"
                                     type="number"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    class="ffb-input"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    placeholder="{{ $blueprint->placeholder }}"
+                                    @if ($blueprint->min !== null) min="{{ $blueprint->min }}" @endif
+                                    @if ($blueprint->max !== null) max="{{ $blueprint->max }}" @endif
+                                    @if ($blueprint->required) required @endif
                                 />
                                 @break
 
                             @default
                                 <input
-                                    id="field-{{ $fieldName }}"
+                                    id="{{ $inputId }}"
                                     type="text"
-                                    wire:model="formData.{{ $fieldName }}"
-                                    placeholder="{{ $placeholder }}"
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                    @if ($isRequired) required @endif
+                                    class="ffb-input"
+                                    wire:model.blur="formData.{{ $blueprint->key }}"
+                                    placeholder="{{ $blueprint->placeholder }}"
+                                    @if ($blueprint->maxLength) maxlength="{{ $blueprint->maxLength }}" @endif
+                                    @if ($blueprint->required) required @endif
                                 />
                         @endswitch
 
-                        @error("formData.{$fieldName}")
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @error("formData.{$blueprint->key}")
+                            <p class="ffb-error">{{ $message }}</p>
                         @enderror
                     </div>
                 @endforeach
 
-                <div class="pt-2">
-                    <button
-                        type="submit"
-                        wire:loading.attr="disabled"
-                        class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <span wire:loading.remove>{{ __('filament-form-builder::form.submit') }}</span>
-                        <span wire:loading>{{ __('filament-form-builder::form.submitting') }}</span>
-                    </button>
-                </div>
+                <button
+                    type="submit"
+                    class="ffb-submit"
+                    wire:loading.attr="disabled"
+                >
+                    <span wire:loading.remove wire:target="submit">{{ __('filament-form-builder::form.submit') }}</span>
+                    <span wire:loading wire:target="submit">{{ __('filament-form-builder::form.submitting') }}</span>
+                </button>
             </form>
         </div>
     @endif

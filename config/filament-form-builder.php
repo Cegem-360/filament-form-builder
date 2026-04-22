@@ -63,6 +63,45 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Embed security
+    |--------------------------------------------------------------------------
+    |
+    | frame_ancestors:
+    |   Content-Security-Policy frame-ancestors source list. The default `'*'`
+    |   allows any site to embed the iframe, which is usually the point of a
+    |   form widget. For production, set to an explicit allowlist such as
+    |   `"https://example.com https://*.example.com"`.
+    |
+    | iframe_sandbox:
+    |   `sandbox` attribute applied to the <iframe> the widget creates on the
+    |   host page. `allow-forms allow-scripts allow-same-origin` is the minimum
+    |   needed for Livewire to work. Set to null to disable (not recommended).
+    |
+    */
+    'embed' => [
+        'frame_ancestors' => '*',
+        'iframe_sandbox' => 'allow-forms allow-scripts allow-same-origin',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom CSS
+    |--------------------------------------------------------------------------
+    |
+    | Per-form CSS, edited in the admin via a CodeEditor. The stored CSS is
+    | sanitised (no `@import`, no `url(javascript:...)`, no `</style>` escapes)
+    | and scope-prefixed with the form container selector, so a user cannot
+    | target `body` or elements outside the iframe. `max_length` bounds the
+    | stored CSS blob.
+    |
+    */
+    'custom_css' => [
+        'enabled' => true,
+        'max_length' => 20000,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Filament Integration
     |--------------------------------------------------------------------------
     */

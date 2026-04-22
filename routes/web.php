@@ -16,14 +16,14 @@ Route::middleware($middleware)->group(function () use ($showPath, $embedPath, $s
     // Literal routes must be registered before catch-all {slug} routes so
     // that e.g. /forms/embed.js is not captured by /forms/{slug}.
     Route::get($scriptPath, EmbedScriptController::class)
-        ->middleware('throttle:' . ($throttle['script'] ?? '120,1'))
+        ->middleware('throttle:'.($throttle['script'] ?? '120,1'))
         ->name('form-builder.widget.script');
 
     Route::get($embedPath, [PublicFormController::class, 'embed'])
-        ->middleware('throttle:' . ($throttle['embed'] ?? '60,1'))
+        ->middleware('throttle:'.($throttle['embed'] ?? '60,1'))
         ->name('form-builder.form.embed');
 
     Route::get($showPath, [PublicFormController::class, 'show'])
-        ->middleware('throttle:' . ($throttle['show'] ?? '60,1'))
+        ->middleware('throttle:'.($throttle['show'] ?? '60,1'))
         ->name('form-builder.form.show');
 });

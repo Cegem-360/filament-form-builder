@@ -8,20 +8,49 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Js;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Madbox99\FilamentFormBuilder\Actions\ProcessFormSubmission;
 use Madbox99\FilamentFormBuilder\Events\FormSubmissionProcessed;
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
+use Madbox99\FilamentFormBuilder\Support\CssSanitizer;
+use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
 
 final class PublicRegistrationForm extends Component
 {
-    public RegistrationForm $registrationForm;
+    /**
+     * The form id is the only model reference sent to the client. Every other
+     * model attribute is exposed through protected getters / view data so that
+     * `submission_actions`, `notify_emails`, `redirect_url`, and tenant ids
+     * never appear in the serialised Livewire snapshot.
+     */
+    #[Locked]
+    public int $formId = 0;
+
+    #[Locked]
+    public string $formSlug = '';
+
+    public string $formName = '';
+
+    public ?string $formDescription = null;
 
     /** @var array<string, mixed> */
     public array $formData = [];
 
+    /**
+     * Honeypot. Any non-empty value is treated as bot activity and silently
+     * discarded — the UI still renders the "thank you" state so bots cannot
+     * tell real from rejected submissions.
+     */
+    public string $website = '';
+
     public bool $submitted = false;
+
+    private ?RegistrationForm $formInstance = null;
+
+    /** @var list<FormFieldBlueprint>|null */
+    private ?array $blueprintCache = null;
 
     public function mount(RegistrationForm $form): void
     {
@@ -29,15 +58,31 @@ final class PublicRegistrationForm extends Component
             abort(404);
         }
 
-        $this->registrationForm = $form;
+        $this->formInstance = $form;
+        $this->formId = (int) $form->id;
+        $this->formSlug = (string) $form->slug;
+        $this->formName = (string) $form->name;
+        $this->formDescription = $form->description !== null && $form->description !== ''
+            ? (string) $form->description
+            : null;
+
         $this->initializeFormData();
     }
 
     public function submit(ProcessFormSubmission $processor): void
     {
+        $form = $this->resolveForm();
+
+        if ($this->website !== '') {
+            // Honeypot triggered — pretend success, do nothing.
+            $this->submitted = true;
+
+            return;
+        }
+
         $attempts = (int) config('filament-form-builder.submission_rate_limit.attempts', 5);
         $decay = (int) config('filament-form-builder.submission_rate_limit.decay_seconds', 60);
-        $key = 'form-builder-submit:' . request()->ip();
+        $key = 'form-builder-submit:'.$this->formId.':'.request()->ip();
 
         if (RateLimiter::tooManyAttempts($key, $attempts)) {
             $seconds = RateLimiter::availableIn($key);
@@ -55,58 +100,118 @@ final class PublicRegistrationForm extends Component
 
         $submission = null;
 
-        DB::transaction(function () use ($processor, &$submission): void {
-            $submission = $processor->handle($this->registrationForm, $this->formData);
-            $this->registrationForm->increment('submissions_count');
+        DB::transaction(function () use ($processor, $form, &$submission): void {
+            $submission = $processor->handle($form, $this->normalisedFormData());
+            $form->increment('submissions_count');
         });
 
         FormSubmissionProcessed::dispatch(
-            $this->registrationForm,
+            $form,
             $submission instanceof FormSubmission ? $submission : null,
-            $this->formData,
-            $this->registrationForm->submission_actions,
+            $this->normalisedFormData(),
+            $form->submission_actions,
         );
 
         $this->submitted = true;
 
-        if ($this->registrationForm->redirect_url !== null && $this->registrationForm->redirect_url !== '') {
-            $url = Js::from($this->registrationForm->redirect_url);
+        $redirect = self::safeRedirectUrl($form->redirect_url);
+        if ($redirect !== null) {
+            $url = Js::from($redirect);
 
             $this->js(<<<JS
-                window.dispatchEvent(new CustomEvent('marketinghub:redirect', { detail: { url: {$url} } }));
-                if (window.parent === window) { window.location.href = {$url}; }
+                (function () {
+                    var detail = { url: {$url} };
+                    try {
+                        document.dispatchEvent(new CustomEvent('ffb:redirect', { detail: detail, bubbles: true }));
+                        window.dispatchEvent(new CustomEvent('ffb:redirect', { detail: detail }));
+                    } catch (e) {}
+                    if (window.parent === window) {
+                        window.location.href = {$url};
+                    }
+                })();
                 JS);
         }
     }
 
     public function render(): View
     {
-        return view('filament-form-builder::livewire.public-registration-form');
+        $form = $this->resolveForm();
+
+        $scopeSelector = '#ffb-form-'.$this->formSlug;
+        $customCssRaw = $form->custom_css ?? '';
+        $customCssSanitized = CssSanitizer::sanitize(
+            is_string($customCssRaw) ? $customCssRaw : '',
+            (int) config('filament-form-builder.custom_css.max_length', CssSanitizer::DEFAULT_MAX_LENGTH),
+        );
+        $customCssScoped = $customCssSanitized !== ''
+            ? CssSanitizer::scope($customCssSanitized, $scopeSelector)
+            : '';
+
+        return view('filament-form-builder::livewire.public-registration-form', [
+            'blueprints' => $this->blueprints(),
+            'thankYouMessage' => (string) ($form->thank_you_message ?? ''),
+            'containerId' => 'ffb-form-'.$this->formSlug,
+            'scopeSelector' => $scopeSelector,
+            'customCss' => $customCssScoped,
+        ]);
+    }
+
+    public static function safeRedirectUrl(mixed $url): ?string
+    {
+        if (! is_string($url) || $url === '') {
+            return null;
+        }
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+
+        if (! is_string($scheme) || ! in_array(strtolower($scheme), ['http', 'https'], true)) {
+            return null;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        if (! is_string($host) || $host === '') {
+            return null;
+        }
+
+        return $url;
     }
 
     /**
-     * @return iterable<array{normalized: string, original: string, field: array<string, mixed>}>
+     * @return list<FormFieldBlueprint>
      */
-    private function eachField(): iterable
+    private function blueprints(): array
     {
-        $fields = $this->registrationForm->fields ?? [];
-
-        foreach ($fields as $field) {
-            $original = (string) ($field['name'] ?? '');
-            $normalized = $this->normalizeFieldName($original);
-
-            if ($normalized === '') {
-                continue;
-            }
-
-            yield ['normalized' => $normalized, 'original' => $original, 'field' => $field];
+        if ($this->blueprintCache !== null) {
+            return $this->blueprintCache;
         }
+
+        $this->blueprintCache = FormFieldBlueprint::fromForm($this->resolveForm());
+
+        return $this->blueprintCache;
+    }
+
+    private function resolveForm(): RegistrationForm
+    {
+        if ($this->formInstance instanceof RegistrationForm) {
+            return $this->formInstance;
+        }
+
+        /** @var RegistrationForm $form */
+        $form = RegistrationForm::query()->findOrFail($this->formId);
+
+        if (! $form->is_active) {
+            abort(404);
+        }
+
+        $this->formInstance = $form;
+
+        return $form;
     }
 
     private function initializeFormData(): void
     {
-        foreach ($this->eachField() as ['normalized' => $name, 'field' => $field]) {
-            $this->formData[$name] = ($field['type'] ?? 'text') === 'checkbox' ? false : '';
+        foreach ($this->blueprints() as $blueprint) {
+            $this->formData[$blueprint->key] = $blueprint->defaultValue();
         }
     }
 
@@ -117,26 +222,8 @@ final class PublicRegistrationForm extends Component
     {
         $rules = [];
 
-        foreach ($this->eachField() as ['normalized' => $name, 'field' => $field]) {
-            $fieldRules = [];
-
-            if (! empty($field['required'])) {
-                $fieldRules[] = ($field['type'] ?? 'text') === 'checkbox' ? 'accepted' : 'required';
-            } else {
-                $fieldRules[] = 'nullable';
-            }
-
-            $fieldRules = match ($field['type'] ?? 'text') {
-                'email' => [...$fieldRules, 'email:rfc'],
-                'phone' => [...$fieldRules, 'string', 'max:50'],
-                'number' => [...$fieldRules, 'numeric'],
-                'date' => [...$fieldRules, 'date'],
-                'textarea' => [...$fieldRules, 'string', 'max:5000'],
-                'checkbox' => $fieldRules,
-                default => [...$fieldRules, 'string', 'max:255'],
-            };
-
-            $rules["formData.{$name}"] = $fieldRules;
+        foreach ($this->blueprints() as $blueprint) {
+            $rules["formData.{$blueprint->key}"] = $blueprint->validationRules();
         }
 
         return $rules;
@@ -149,15 +236,27 @@ final class PublicRegistrationForm extends Component
     {
         $attributes = [];
 
-        foreach ($this->eachField() as ['normalized' => $name, 'original' => $original]) {
-            $attributes["formData.{$name}"] = $original;
+        foreach ($this->blueprints() as $blueprint) {
+            $attributes["formData.{$blueprint->key}"] = $blueprint->label;
         }
 
         return $attributes;
     }
 
-    private function normalizeFieldName(string $name): string
+    /**
+     * Only keep keys known to the stored blueprint — drops any extra keys an
+     * attacker might try to inject through Livewire's public `formData` array.
+     *
+     * @return array<string, mixed>
+     */
+    private function normalisedFormData(): array
     {
-        return str($name)->lower()->snake()->toString();
+        $normalised = [];
+
+        foreach ($this->blueprints() as $blueprint) {
+            $normalised[$blueprint->key] = $this->formData[$blueprint->key] ?? $blueprint->defaultValue();
+        }
+
+        return $normalised;
     }
 }
