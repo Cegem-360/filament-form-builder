@@ -11,8 +11,8 @@
     @livewireStyles
 
     <style>
-        body.ffb-body { margin: 0; padding: 0; background: #f8fafc; min-height: 100vh; -webkit-font-smoothing: antialiased; }
-        .ffb-page-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1rem; }
+        body.ffb-body { margin: 0; padding: 0; background: #f9fafb; min-height: 100vh; color: #111827; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+        .ffb-page-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2.5rem 1rem; }
     </style>
 </head>
 <body class="ffb-body">
