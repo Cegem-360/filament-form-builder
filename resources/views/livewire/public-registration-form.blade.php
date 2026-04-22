@@ -2,12 +2,17 @@
     /** @var string $containerId */
     /** @var string $scopeSelector */
     /** @var string $customCss */
+    /** @var string $designTokensCss */
     /** @var list<\Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint> $blueprints */
     /** @var string $thankYouMessage */
     use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
 @endphp
 
 <div id="{{ $containerId }}" class="ffb-scope">
+    @if ($designTokensCss !== '')
+        <style>{!! $designTokensCss !!}</style>
+    @endif
+
     @if ($customCss !== '')
         <style>{!! $customCss !!}</style>
     @endif

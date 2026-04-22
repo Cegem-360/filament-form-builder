@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Madbox99\FilamentFormBuilder\Casts\DesignTokensCast;
 use Madbox99\FilamentFormBuilder\Casts\SubmissionActionsCast;
 use Madbox99\FilamentFormBuilder\Contracts\FormTenantResolver;
 use Madbox99\FilamentFormBuilder\Database\Factories\RegistrationFormFactory;
@@ -109,6 +110,7 @@ class RegistrationForm extends Model
         return [
             'fields' => 'array',
             'submission_actions' => SubmissionActionsCast::class,
+            'design_tokens' => DesignTokensCast::class,
             'is_active' => 'boolean',
             'submissions_count' => 'integer',
         ];

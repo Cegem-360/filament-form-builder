@@ -16,6 +16,7 @@ use Madbox99\FilamentFormBuilder\Models\FormSubmission;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Madbox99\FilamentFormBuilder\Support\CssSanitizer;
 use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
+use Madbox99\FilamentFormBuilder\ValueObjects\DesignTokens;
 
 final class PublicRegistrationForm extends Component
 {
@@ -147,12 +148,21 @@ final class PublicRegistrationForm extends Component
             ? CssSanitizer::scope($customCssSanitized, $scopeSelector)
             : '';
 
+        $tokens = $form->design_tokens instanceof DesignTokens
+            ? $form->design_tokens
+            : new DesignTokens;
+        $declarations = $tokens->toCssDeclarations();
+        $designTokensCss = $declarations !== ''
+            ? $scopeSelector.' { '.$declarations.' }'
+            : '';
+
         return view('filament-form-builder::livewire.public-registration-form', [
             'blueprints' => $this->blueprints(),
             'thankYouMessage' => (string) ($form->thank_you_message ?? ''),
             'containerId' => 'ffb-form-'.$this->formSlug,
             'scopeSelector' => $scopeSelector,
             'customCss' => $customCssScoped,
+            'designTokensCss' => $designTokensCss,
         ]);
     }
 
