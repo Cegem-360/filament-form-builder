@@ -45,6 +45,31 @@ final readonly class FormFieldBlueprint
         self::TYPE_DATE,
     ];
 
+    public const WIDTH_FULL = 'full';
+
+    public const WIDTH_HALF = 'half';
+
+    public const WIDTHS = [self::WIDTH_FULL, self::WIDTH_HALF];
+
+    /**
+     * Field types where admins may choose half-width. Textareas and checkboxes
+     * are always full-width: narrow textareas invite short answers, and
+     * consent-style checkboxes read better at full width.
+     */
+    private const WIDTH_ELIGIBLE_TYPES = [
+        self::TYPE_TEXT,
+        self::TYPE_EMAIL,
+        self::TYPE_PHONE,
+        self::TYPE_NUMBER,
+        self::TYPE_SELECT,
+        self::TYPE_DATE,
+    ];
+
+    public static function supportsWidthChoice(string $type): bool
+    {
+        return in_array($type, self::WIDTH_ELIGIBLE_TYPES, true);
+    }
+
     /**
      * @param  Options  $options
      */
@@ -58,6 +83,7 @@ final readonly class FormFieldBlueprint
         public int|float|null $min,
         public int|float|null $max,
         public array $options,
+        public string $width = self::WIDTH_FULL,
     ) {}
 
     /**
@@ -138,6 +164,14 @@ final readonly class FormFieldBlueprint
             }
         }
 
+        $width = self::WIDTH_FULL;
+        if (self::supportsWidthChoice($type)) {
+            $candidate = is_string($data['width'] ?? null) ? $data['width'] : '';
+            if (in_array($candidate, self::WIDTHS, true)) {
+                $width = $candidate;
+            }
+        }
+
         return new self(
             type: $type,
             key: $key,
@@ -148,6 +182,7 @@ final readonly class FormFieldBlueprint
             min: $min,
             max: $max,
             options: $options,
+            width: $width,
         );
     }
 

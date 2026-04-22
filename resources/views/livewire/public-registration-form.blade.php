@@ -58,7 +58,7 @@
                         $inputId = $containerId . '-' . $blueprint->key;
                     @endphp
 
-                    <div class="ffb-field ffb-field--{{ $blueprint->type }} @error('formData.'.$blueprint->key) ffb-field--has-error @enderror">
+                    <div class="ffb-field ffb-field--{{ $blueprint->type }} ffb-field--{{ $blueprint->width }} @error('formData.'.$blueprint->key) ffb-field--has-error @enderror">
                         @if ($blueprint->type !== FormFieldBlueprint::TYPE_CHECKBOX)
                             <label for="{{ $inputId }}" class="ffb-label">
                                 {{ $blueprint->label }}

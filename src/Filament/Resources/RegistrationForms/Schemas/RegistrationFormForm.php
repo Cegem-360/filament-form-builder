@@ -9,6 +9,7 @@ use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -115,6 +116,7 @@ final class RegistrationFormForm
             self::block(FormFieldBlueprint::TYPE_TEXT, Heroicon::Bars3BottomLeft)
                 ->schema([
                     ...self::commonFields(),
+                    self::widthField(),
                     TextInput::make('placeholder')->label(__('filament-form-builder::form.fields.placeholder'))->maxLength(255),
                     TextInput::make('max_length')->label(__('filament-form-builder::form.fields.max_length'))->numeric()->minValue(1)->maxValue(65535),
                 ]),
@@ -122,18 +124,21 @@ final class RegistrationFormForm
             self::block(FormFieldBlueprint::TYPE_EMAIL, Heroicon::Envelope)
                 ->schema([
                     ...self::commonFields(),
+                    self::widthField(),
                     TextInput::make('placeholder')->label(__('filament-form-builder::form.fields.placeholder'))->maxLength(255),
                 ]),
 
             self::block(FormFieldBlueprint::TYPE_PHONE, Heroicon::Phone)
                 ->schema([
                     ...self::commonFields(),
+                    self::widthField(),
                     TextInput::make('placeholder')->label(__('filament-form-builder::form.fields.placeholder'))->maxLength(255),
                 ]),
 
             self::block(FormFieldBlueprint::TYPE_NUMBER, Heroicon::Hashtag)
                 ->schema([
                     ...self::commonFields(),
+                    self::widthField(),
                     TextInput::make('placeholder')->label(__('filament-form-builder::form.fields.placeholder'))->maxLength(255),
                     TextInput::make('min')->label(__('filament-form-builder::form.fields.min'))->numeric(),
                     TextInput::make('max')->label(__('filament-form-builder::form.fields.max'))->numeric(),
@@ -149,6 +154,7 @@ final class RegistrationFormForm
             self::block(FormFieldBlueprint::TYPE_SELECT, Heroicon::ListBullet)
                 ->schema([
                     ...self::commonFields(),
+                    self::widthField(),
                     Repeater::make('options')
                         ->label(__('filament-form-builder::form.fields.options'))
                         ->schema([
@@ -165,8 +171,24 @@ final class RegistrationFormForm
                 ->schema(self::commonFields()),
 
             self::block(FormFieldBlueprint::TYPE_DATE, Heroicon::Calendar)
-                ->schema(self::commonFields()),
+                ->schema([
+                    ...self::commonFields(),
+                    self::widthField(),
+                ]),
         ];
+    }
+
+    private static function widthField(): Select
+    {
+        return Select::make('width')
+            ->label(__('filament-form-builder::form.fields.width'))
+            ->options([
+                FormFieldBlueprint::WIDTH_FULL => __('filament-form-builder::form.fields.width_full'),
+                FormFieldBlueprint::WIDTH_HALF => __('filament-form-builder::form.fields.width_half'),
+            ])
+            ->default(FormFieldBlueprint::WIDTH_FULL)
+            ->selectablePlaceholder(false)
+            ->required();
     }
 
     private static function block(string $type, Heroicon $icon): Block
