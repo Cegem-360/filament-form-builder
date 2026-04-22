@@ -137,7 +137,6 @@ final class RegistrationFormForm
                             ->label(__('filament-form-builder::form.fields.custom_css'))
                             ->language(Language::Css)
                             ->helperText(__('filament-form-builder::form.helpers.custom_css'))
-                            ->maxLength((int) config('filament-form-builder.custom_css.max_length', CssSanitizer::DEFAULT_MAX_LENGTH))
                             ->dehydrateStateUsing(fn (?string $state): ?string => self::sanitiseCss($state))
                             ->columnSpanFull(),
                     ])
