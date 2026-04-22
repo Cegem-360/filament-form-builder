@@ -6,3 +6,9 @@ composer.lock
 .DS_Store
 .idea
 .vscode
+
+# Local Testbench workbench for design preview — not shipped with the package
+/workbench
+/testbench.yaml
+/.env
+/database/database.sqlite
