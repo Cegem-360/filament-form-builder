@@ -107,6 +107,7 @@ return [
     'actions' => [
         'embed_code' => 'Beágyazó kód',
         'close' => 'Bezárás',
+        'preview' => 'Előnézet',
     ],
     'embed' => [
         'direct_desc' => 'Oszd meg ezt a linket, hogy az űrlap önálló oldalon megnyíljon.',

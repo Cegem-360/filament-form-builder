@@ -107,6 +107,7 @@ return [
     'actions' => [
         'embed_code' => 'Embed Code',
         'close' => 'Close',
+        'preview' => 'Preview',
     ],
     'embed' => [
         'direct_desc' => 'Share this link to open the form in a standalone page.',

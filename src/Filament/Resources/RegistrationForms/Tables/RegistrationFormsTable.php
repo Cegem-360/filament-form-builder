@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 
 final class RegistrationFormsTable
 {
@@ -39,6 +42,13 @@ final class RegistrationFormsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
+                Action::make('preview')
+                    ->label(__('filament-form-builder::form.actions.preview'))
+                    ->icon(Heroicon::Eye)
+                    ->color('gray')
+                    ->url(fn (RegistrationForm $record): string => $record->getPublicUrl())
+                    ->openUrlInNewTab()
+                    ->visible(fn (RegistrationForm $record): bool => (bool) $record->is_active),
                 EditAction::make(),
             ])
             ->toolbarActions([
