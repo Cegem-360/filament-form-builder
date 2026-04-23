@@ -14,12 +14,12 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::hasColumn('registration_forms', 'design_tokens')) {
+        if (Schema::hasColumn('registration_forms', 'custom_css')) {
             return;
         }
 
         Schema::table('registration_forms', function (Blueprint $table): void {
-            $table->json('design_tokens')->nullable();
+            $table->longText('custom_css')->nullable();
         });
     }
 
@@ -29,12 +29,12 @@ return new class extends Migration
             return;
         }
 
-        if (! Schema::hasColumn('registration_forms', 'design_tokens')) {
+        if (! Schema::hasColumn('registration_forms', 'custom_css')) {
             return;
         }
 
         Schema::table('registration_forms', function (Blueprint $table): void {
-            $table->dropColumn('design_tokens');
+            $table->dropColumn('custom_css');
         });
     }
 };
