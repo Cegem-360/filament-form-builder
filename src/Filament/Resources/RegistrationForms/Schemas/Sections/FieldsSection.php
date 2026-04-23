@@ -20,6 +20,7 @@ final class FieldsSection
                     ->blocks(FieldBlocks::all())
                     ->columnSpanFull()
                     ->collapsible()
+                    ->collapsed()
                     ->required(),
             ]);
     }

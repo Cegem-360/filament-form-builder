@@ -88,7 +88,13 @@ final class FieldBlocks
     private static function block(string $type, Heroicon $icon): Block
     {
         return Block::make($type)
-            ->label(__('filament-form-builder::form.field_types.'.$type))
+            ->label(function (?array $state) use ($type): string {
+                $fieldLabel = isset($state['label']) && is_string($state['label']) ? trim($state['label']) : '';
+
+                return $fieldLabel !== ''
+                    ? $fieldLabel
+                    : __('filament-form-builder::form.field_types.'.$type);
+            })
             ->icon($icon);
     }
 
