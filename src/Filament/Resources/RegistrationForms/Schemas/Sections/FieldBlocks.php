@@ -62,20 +62,24 @@ final class FieldBlocks
                 ->schema([
                     ...self::commonFields(),
                     self::widthField(),
-                    Repeater::make('options')
-                        ->label(__('filament-form-builder::form.fields.options'))
-                        ->schema([
-                            TextInput::make('label')->label(__('filament-form-builder::form.fields.option_label'))->required()->maxLength(255),
-                            TextInput::make('value')->label(__('filament-form-builder::form.fields.option_value'))->required()->maxLength(255)
-                                ->rule('regex:/^[A-Za-z0-9._\-]+$/'),
-                        ])
-                        ->defaultItems(2)
-                        ->columns(2)
-                        ->columnSpanFull(),
+                    self::optionsRepeater(),
                 ]),
 
             self::block(FormFieldBlueprint::TYPE_CHECKBOX, Heroicon::CheckCircle)
                 ->schema(self::commonFields()),
+
+            self::block(FormFieldBlueprint::TYPE_CHECKBOX_LIST, Heroicon::ListBullet)
+                ->schema([
+                    ...self::commonFields(),
+                    self::optionsRepeater(),
+                ]),
+
+            self::block(FormFieldBlueprint::TYPE_RADIO, Heroicon::CheckCircle)
+                ->schema([
+                    ...self::commonFields(),
+                    self::widthField(),
+                    self::optionsRepeater(),
+                ]),
 
             self::block(FormFieldBlueprint::TYPE_DATE, Heroicon::Calendar)
                 ->schema([
@@ -96,6 +100,20 @@ final class FieldBlocks
                     : __('filament-form-builder::form.field_types.'.$type);
             })
             ->icon($icon);
+    }
+
+    private static function optionsRepeater(): Repeater
+    {
+        return Repeater::make('options')
+            ->label(__('filament-form-builder::form.fields.options'))
+            ->schema([
+                TextInput::make('label')->label(__('filament-form-builder::form.fields.option_label'))->required()->maxLength(255),
+                TextInput::make('value')->label(__('filament-form-builder::form.fields.option_value'))->required()->maxLength(255)
+                    ->rule('regex:/^[A-Za-z0-9._\-]+$/'),
+            ])
+            ->defaultItems(2)
+            ->columns(2)
+            ->columnSpanFull();
     }
 
     private static function widthField(): Select

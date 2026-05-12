@@ -65,7 +65,7 @@
 
                     <div class="ffb-field ffb-field--{{ $blueprint->type }} ffb-field--{{ $blueprint->width }} @error('formData.'.$blueprint->key) ffb-field--has-error @enderror">
                         @if ($blueprint->type !== FormFieldBlueprint::TYPE_CHECKBOX)
-                            <label for="{{ $inputId }}" class="ffb-label">
+                            <label id="{{ $inputId }}-label" for="{{ $inputId }}" class="ffb-label">
                                 {{ $blueprint->label }}
                                 @if ($blueprint->required)
                                     <span class="ffb-required" aria-hidden="true">*</span>
@@ -115,6 +115,44 @@
                                         @endif
                                     </span>
                                 </label>
+                                @break
+
+                            @case(FormFieldBlueprint::TYPE_CHECKBOX_LIST)
+                                <div class="ffb-checkbox-group" role="group" aria-labelledby="{{ $inputId }}-label">
+                                    @foreach ($blueprint->options as $i => $option)
+                                        @php $optionId = $inputId.'-'.$i; @endphp
+                                        <label class="ffb-option" for="{{ $optionId }}">
+                                            <input
+                                                id="{{ $optionId }}"
+                                                type="checkbox"
+                                                class="ffb-checkbox"
+                                                value="{{ $option['value'] }}"
+                                                wire:model.blur="formData.{{ $blueprint->key }}"
+                                            />
+                                            <span class="ffb-option-label">{{ $option['label'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                @break
+
+                            @case(FormFieldBlueprint::TYPE_RADIO)
+                                <div class="ffb-radio-group" role="radiogroup" aria-labelledby="{{ $inputId }}-label">
+                                    @foreach ($blueprint->options as $i => $option)
+                                        @php $optionId = $inputId.'-'.$i; @endphp
+                                        <label class="ffb-option" for="{{ $optionId }}">
+                                            <input
+                                                id="{{ $optionId }}"
+                                                type="radio"
+                                                class="ffb-radio"
+                                                name="{{ $inputId }}"
+                                                value="{{ $option['value'] }}"
+                                                wire:model.blur="formData.{{ $blueprint->key }}"
+                                                @if ($blueprint->required) required @endif
+                                            />
+                                            <span class="ffb-option-label">{{ $option['label'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                                 @break
 
                             @case(FormFieldBlueprint::TYPE_DATE)

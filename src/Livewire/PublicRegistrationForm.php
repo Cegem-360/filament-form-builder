@@ -234,6 +234,11 @@ final class PublicRegistrationForm extends Component
 
         foreach ($this->blueprints() as $blueprint) {
             $rules["formData.{$blueprint->key}"] = $blueprint->validationRules();
+
+            $itemRules = $blueprint->arrayItemValidationRules();
+            if ($itemRules !== []) {
+                $rules["formData.{$blueprint->key}.*"] = $itemRules;
+            }
         }
 
         return $rules;

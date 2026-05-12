@@ -102,6 +102,8 @@ return [
         'textarea' => 'Hosszú szöveg',
         'select' => 'Legördülő',
         'checkbox' => 'Pipa',
+        'checkbox_list' => 'Több választós (checkbox)',
+        'radio' => 'Rádió',
         'date' => 'Dátum',
     ],
     'actions' => [

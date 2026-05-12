@@ -32,6 +32,10 @@ final readonly class FormFieldBlueprint
 
     public const TYPE_CHECKBOX = 'checkbox';
 
+    public const TYPE_CHECKBOX_LIST = 'checkbox_list';
+
+    public const TYPE_RADIO = 'radio';
+
     public const TYPE_DATE = 'date';
 
     public const TYPES = [
@@ -42,6 +46,8 @@ final readonly class FormFieldBlueprint
         self::TYPE_TEXTAREA,
         self::TYPE_SELECT,
         self::TYPE_CHECKBOX,
+        self::TYPE_CHECKBOX_LIST,
+        self::TYPE_RADIO,
         self::TYPE_DATE,
     ];
 
@@ -62,6 +68,7 @@ final readonly class FormFieldBlueprint
         self::TYPE_PHONE,
         self::TYPE_NUMBER,
         self::TYPE_SELECT,
+        self::TYPE_RADIO,
         self::TYPE_DATE,
     ];
 
@@ -144,7 +151,8 @@ final readonly class FormFieldBlueprint
         $max = self::numericOrNull($data['max'] ?? null);
 
         $options = [];
-        if ($type === self::TYPE_SELECT && is_array($data['options'] ?? null)) {
+        $hasOptions = in_array($type, [self::TYPE_SELECT, self::TYPE_RADIO, self::TYPE_CHECKBOX_LIST], true);
+        if ($hasOptions && is_array($data['options'] ?? null)) {
             foreach ($data['options'] as $option) {
                 if (! is_array($option)) {
                     continue;
@@ -194,7 +202,11 @@ final readonly class FormFieldBlueprint
         $rules = [];
 
         if ($this->required) {
-            $rules[] = $this->type === self::TYPE_CHECKBOX ? 'accepted' : 'required';
+            $rules[] = match ($this->type) {
+                self::TYPE_CHECKBOX => 'accepted',
+                self::TYPE_CHECKBOX_LIST => 'required',
+                default => 'required',
+            };
         } else {
             $rules[] = 'nullable';
         }
@@ -211,7 +223,7 @@ final readonly class FormFieldBlueprint
             self::TYPE_DATE => [...$rules, 'date'],
             self::TYPE_TEXTAREA => [...$rules, 'string', 'max:'.($this->maxLength ?? 5000)],
             self::TYPE_CHECKBOX => [...$rules, 'boolean'],
-            self::TYPE_SELECT => [
+            self::TYPE_SELECT, self::TYPE_RADIO => [
                 ...$rules,
                 'string',
                 'max:255',
@@ -220,15 +232,48 @@ final readonly class FormFieldBlueprint
                     array_map(static fn (array $option): string => (string) $option['value'], $this->options),
                 ),
             ],
+            self::TYPE_CHECKBOX_LIST => array_values(array_filter([
+                ...$rules,
+                'array',
+                $this->required ? 'min:1' : null,
+            ])),
             default => [...$rules, 'string', 'max:'.($this->maxLength ?? 255)],
         };
 
         return $rules;
     }
 
+    /**
+     * Per-item rules for array-valued fields (e.g. checkbox_list). The
+     * Livewire form registers these under "formData.<key>.*".
+     *
+     * @return list<string>
+     */
+    public function arrayItemValidationRules(): array
+    {
+        if ($this->type !== self::TYPE_CHECKBOX_LIST) {
+            return [];
+        }
+
+        $rules = ['string', 'max:255'];
+
+        if ($this->options !== []) {
+            $rules[] = 'in:'.implode(
+                ',',
+                array_map(static fn (array $option): string => (string) $option['value'], $this->options),
+            );
+        }
+
+        return $rules;
+    }
+
     public function defaultValue(): mixed
     {
-        return $this->type === self::TYPE_CHECKBOX ? false : '';
+        return match ($this->type) {
+            self::TYPE_CHECKBOX => false,
+            self::TYPE_CHECKBOX_LIST => [],
+            default => '',
+        };
     }
 
     private static function stringValue(mixed $value, int $maxLength): string

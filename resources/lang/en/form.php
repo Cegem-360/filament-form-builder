@@ -102,6 +102,8 @@ return [
         'textarea' => 'Long text',
         'select' => 'Dropdown',
         'checkbox' => 'Checkbox',
+        'checkbox_list' => 'Checkbox list',
+        'radio' => 'Radio buttons',
         'date' => 'Date',
     ],
     'actions' => [

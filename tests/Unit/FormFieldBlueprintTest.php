@@ -117,3 +117,74 @@ it('requires accepted for required checkbox', function (): void {
 
     expect($rules)->toContain('accepted');
 });
+
+it('renders radio options with an in rule like select', function (): void {
+    $form = makeForm([
+        [
+            'type' => FormFieldBlueprint::TYPE_RADIO,
+            'data' => [
+                'name' => 'plan',
+                'label' => 'Plan',
+                'required' => true,
+                'options' => [
+                    ['label' => 'Free', 'value' => 'free'],
+                    ['label' => 'Pro', 'value' => 'pro'],
+                ],
+            ],
+        ],
+    ]);
+
+    $blueprint = FormFieldBlueprint::fromForm($form)[0];
+
+    expect($blueprint->validationRules())->toContain('in:free,pro')
+        ->and($blueprint->defaultValue())->toBe('');
+});
+
+it('treats checkbox_list as an array with min:1 when required', function (): void {
+    $form = makeForm([
+        [
+            'type' => FormFieldBlueprint::TYPE_CHECKBOX_LIST,
+            'data' => [
+                'name' => 'topics',
+                'label' => 'Topics',
+                'required' => true,
+                'options' => [
+                    ['label' => 'A', 'value' => 'a'],
+                    ['label' => 'B', 'value' => 'b'],
+                ],
+            ],
+        ],
+    ]);
+
+    $blueprint = FormFieldBlueprint::fromForm($form)[0];
+
+    expect($blueprint->validationRules())->toContain('array')
+        ->and($blueprint->validationRules())->toContain('min:1')
+        ->and($blueprint->arrayItemValidationRules())->toContain('in:a,b')
+        ->and($blueprint->defaultValue())->toBe([]);
+});
+
+it('does not add min:1 for optional checkbox_list', function (): void {
+    $form = makeForm([
+        [
+            'type' => FormFieldBlueprint::TYPE_CHECKBOX_LIST,
+            'data' => [
+                'name' => 'topics',
+                'label' => 'Topics',
+                'options' => [
+                    ['label' => 'A', 'value' => 'a'],
+                ],
+            ],
+        ],
+    ]);
+
+    $rules = FormFieldBlueprint::fromForm($form)[0]->validationRules();
+
+    expect($rules)->toContain('nullable')
+        ->and($rules)->not->toContain('min:1');
+});
+
+it('allows half width on radio but not on checkbox_list', function (): void {
+    expect(FormFieldBlueprint::supportsWidthChoice(FormFieldBlueprint::TYPE_RADIO))->toBeTrue()
+        ->and(FormFieldBlueprint::supportsWidthChoice(FormFieldBlueprint::TYPE_CHECKBOX_LIST))->toBeFalse();
+});

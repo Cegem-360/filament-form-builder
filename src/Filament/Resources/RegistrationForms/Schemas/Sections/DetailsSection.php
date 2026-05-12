@@ -8,6 +8,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Support\Str;
 
 final class DetailsSection
 {
@@ -18,7 +20,15 @@ final class DetailsSection
                 TextInput::make('name')
                     ->label(__('filament-form-builder::form.fields.name'))
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(static function (?string $state, Set $set, string $operation): void {
+                        if ($operation !== 'create') {
+                            return;
+                        }
+
+                        $set('slug', Str::slug((string) $state));
+                    }),
                 TextInput::make('slug')
                     ->label(__('filament-form-builder::form.fields.slug'))
                     ->required()
