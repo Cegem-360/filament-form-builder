@@ -16,6 +16,8 @@ use Madbox99\FilamentFormBuilder\ValueObjects\MappedInboundPayload;
  */
 final class InboundPayloadMapper
 {
+    public const int MAX_UNMAPPED_LENGTH = 1000;
+
     public static function map(RegistrationForm $form, array $payload): MappedInboundPayload
     {
         $fieldKeys = array_map(
@@ -50,7 +52,41 @@ final class InboundPayloadMapper
             }
         }
 
-        return new MappedInboundPayload($mapped, $unmapped);
+        return new MappedInboundPayload($mapped, array_map(self::unmappedValue(...), $unmapped));
+    }
+
+    /**
+     * Number of leaf values in a payload; every list item counts, so a huge
+     * list cannot slip past the field limit as a single key.
+     */
+    public static function countValues(array $payload): int
+    {
+        $count = 0;
+
+        foreach ($payload as $value) {
+            $count += is_array($value) ? max(1, self::countValues($value)) : 1;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Unmapped values are stored as plain, bounded scalars: lists become
+     * comma-separated text, long strings are truncated.
+     */
+    private static function unmappedValue(mixed $value): string|int|float|bool|null
+    {
+        if (is_array($value)) {
+            $value = array_is_list($value) && array_filter($value, is_array(...)) === []
+                ? implode(', ', array_map(strval(...), $value))
+                : (string) json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+
+        if (is_string($value)) {
+            return mb_substr($value, 0, self::MAX_UNMAPPED_LENGTH);
+        }
+
+        return is_scalar($value) || $value === null ? $value : null;
     }
 
     /**

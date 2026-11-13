@@ -38,10 +38,10 @@ final class InboundSubmissionController extends Controller
         }
 
         /** @var array<string, mixed> $payload */
-        $payload = $request->all();
+        $payload = $request->input(); // files are not supported and left out
         $maxFields = (int) config('filament-form-builder.inbound.max_fields', 100);
 
-        if (count(InboundPayloadMapper::flatten($payload)) > $maxFields) {
+        if (InboundPayloadMapper::countValues($payload) > $maxFields) {
             return new JsonResponse([
                 'message' => __('filament-form-builder::form.errors.too_many_fields', ['max' => $maxFields]),
             ], 413);
@@ -50,11 +50,13 @@ final class InboundSubmissionController extends Controller
         $mappedPayload = InboundPayloadMapper::map($form, $payload);
         $blueprints = FormFieldBlueprint::fromForm($form);
 
-        Validator::make($mappedPayload->mapped, $this->rules($blueprints), [], $this->attributes($blueprints))->validate();
+        $mapped = $this->normaliseCheckboxes($mappedPayload->mapped, $blueprints);
+
+        Validator::make($mapped, $this->rules($blueprints), [], $this->attributes($blueprints))->validate();
 
         $formData = [];
         foreach ($blueprints as $blueprint) {
-            $formData[$blueprint->key] = $mappedPayload->mapped[$blueprint->key] ?? $blueprint->defaultValue();
+            $formData[$blueprint->key] = $mapped[$blueprint->key] ?? $blueprint->defaultValue();
         }
 
         $submission = $submitter->handle($form, $formData, $mappedPayload->unmapped, 'inbound');
@@ -88,6 +90,36 @@ final class InboundSubmissionController extends Controller
         RateLimiter::hit($key, max(1, $minutes) * 60);
 
         return null;
+    }
+
+    /**
+     * External forms send checkboxes as "on", "yes", "true"… The embedded form
+     * stores real booleans, so known truthy / falsy words become true / false;
+     * anything else is left for validation to reject.
+     *
+     * @param  array<string, mixed>  $mapped
+     * @param  list<FormFieldBlueprint>  $blueprints
+     * @return array<string, mixed>
+     */
+    private function normaliseCheckboxes(array $mapped, array $blueprints): array
+    {
+        foreach ($blueprints as $blueprint) {
+            if ($blueprint->type !== FormFieldBlueprint::TYPE_CHECKBOX || ! array_key_exists($blueprint->key, $mapped)) {
+                continue;
+            }
+
+            $value = $mapped[$blueprint->key];
+            $word = is_scalar($value) ? mb_strtolower(trim((string) $value)) : null;
+
+            $mapped[$blueprint->key] = match (true) {
+                is_bool($value) => $value,
+                in_array($word, ['1', 'on', 'yes', 'true'], true) => true,
+                in_array($word, ['', '0', 'off', 'no', 'false'], true) => false,
+                default => $value,
+            };
+        }
+
+        return $mapped;
     }
 
     /**

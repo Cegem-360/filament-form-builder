@@ -112,6 +112,9 @@ submission under `data._unmapped` and passed on the event as
 | 429 | More than `routes.throttle.inbound` (default 30/minute) requests per form and IP |
 
 Responses are always JSON, also for form-encoded requests without an `Accept` header.
+Uploaded files are ignored. Every list item counts towards `inbound.max_fields`.
+Unmapped values are stored as text (lists joined with `, `), truncated to 1000
+characters. Checkbox fields accept `on`/`yes`/`true`/`1` and `off`/`no`/`false`/`0`/empty.
 
 ```bash
 curl -X POST 'https://your-app.test/forms/contact/inbound/<token>' \

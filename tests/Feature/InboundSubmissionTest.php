@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Madbox99\FilamentFormBuilder\Events\FormSubmissionProcessed;
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
@@ -149,4 +150,67 @@ it('answers a 404 with JSON even for form-encoded requests', function (): void {
     $this->post(route('form-builder.form.inbound', ['missing', str_repeat('x', 64)]), ['email' => 'a@b.hu'])
         ->assertNotFound()
         ->assertJsonStructure(['message']);
+});
+
+it('ignores uploaded files instead of failing', function (): void {
+    $this->post(inboundForm()->getInboundUrl(), [
+        'name' => 'Anna',
+        'email' => 'anna@example.com',
+        'cv' => UploadedFile::fake()->create('cv.pdf', 10),
+    ])->assertCreated();
+
+    expect(FormSubmission::query()->sole()->data)->not->toHaveKey('_unmapped');
+});
+
+it('counts list items towards the field limit', function (): void {
+    $this->postJson(inboundForm()->getInboundUrl(), [
+        'name' => 'Anna',
+        'email' => 'anna@example.com',
+        'tags' => range(1, 150),
+    ])->assertStatus(413);
+});
+
+it('truncates long unmapped values and flattens unmapped lists to text', function (): void {
+    $this->postJson(inboundForm()->getInboundUrl(), [
+        'name' => 'Anna',
+        'email' => 'anna@example.com',
+        'notes' => str_repeat('x', 5000),
+        'tags' => ['a', 'b'],
+    ])->assertCreated();
+
+    $unmapped = FormSubmission::query()->sole()->data['_unmapped'];
+
+    expect(mb_strlen($unmapped['notes']))->toBe(1000)
+        ->and($unmapped['tags'])->toBe('a, b');
+});
+
+it('accepts the usual checkbox values from external forms', function (string $sent, bool $stored): void {
+    $form = inboundForm(['fields' => [
+        ['type' => 'email', 'data' => ['label' => 'Email', 'name' => 'email', 'required' => true]],
+        ['type' => 'checkbox', 'data' => ['label' => 'Newsletter', 'name' => 'newsletter']],
+    ]]);
+
+    $this->post($form->getInboundUrl(), ['email' => 'anna@example.com', 'newsletter' => $sent])->assertCreated();
+
+    expect(FormSubmission::query()->sole()->data['newsletter'])->toBe($stored);
+})->with([
+    'on' => ['on', true],
+    'yes' => ['yes', true],
+    'true' => ['true', true],
+    '1' => ['1', true],
+    'off' => ['off', false],
+    '0' => ['0', false],
+    'empty' => ['', false],
+]);
+
+it('still requires a required consent checkbox', function (): void {
+    $form = inboundForm(['fields' => [
+        ['type' => 'email', 'data' => ['label' => 'Email', 'name' => 'email', 'required' => true]],
+        ['type' => 'checkbox', 'data' => ['label' => 'Consent', 'name' => 'consent', 'required' => true]],
+    ]]);
+
+    $this->post($form->getInboundUrl(), ['email' => 'anna@example.com', 'consent' => 'no'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['consent']);
+    $this->post($form->getInboundUrl(), ['email' => 'anna@example.com', 'consent' => 'on'])->assertCreated();
 });
