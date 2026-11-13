@@ -67,3 +67,13 @@ it('keeps inbound settings out of the JSON export', function (): void {
     expect(array_filter(array_keys($payload), fn (string $key): bool => str_starts_with($key, 'inbound')))->toBe([])
         ->and($encoded)->not->toContain((string) $form->fresh()->inbound_token);
 });
+
+it('generates a token when a form is saved with inbound enabled', function (): void {
+    $created = RegistrationForm::factory()->create(['inbound_enabled' => true]);
+    $edited = RegistrationForm::factory()->create();
+    $edited->update(['inbound_enabled' => true]);
+
+    expect($created->fresh()->inbound_token)->toHaveLength(64)
+        ->and($edited->fresh()->inbound_token)->toHaveLength(64)
+        ->and(RegistrationForm::factory()->create()->fresh()->inbound_token)->toBeNull();
+});

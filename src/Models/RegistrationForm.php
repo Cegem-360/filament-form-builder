@@ -30,6 +30,17 @@ class RegistrationForm extends Model
      */
     protected $guarded = ['id'];
 
+    protected static function booted(): void
+    {
+        // Enabling the inbound webhook gives the form its secret token, so the
+        // admin sees a working URL right after saving.
+        static::saving(function (RegistrationForm $form): void {
+            if ($form->inbound_enabled && blank($form->inbound_token)) {
+                $form->inbound_token = Str::random(64);
+            }
+        });
+    }
+
     protected static function newFactory(): RegistrationFormFactory
     {
         return RegistrationFormFactory::new();

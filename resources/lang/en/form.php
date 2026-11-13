@@ -10,6 +10,7 @@ return [
         'submission_plural' => 'Form Submissions',
     ],
     'sections' => [
+        'inbound' => 'External form (webhook)',
         'form_details' => 'Form Details',
         'form_fields' => 'Form Fields',
         'design' => 'Design',
@@ -23,10 +24,15 @@ return [
         'embed_iframe' => 'Iframe embed',
     ],
     'descriptions' => [
+        'inbound' => 'Keep your own form (WordPress, Zapier, any program) and send its submissions here. They run through the same steps as this form: saved, lead created, notifications sent.',
         'design' => 'Customise the look of this form. Changes apply to both the standalone page and the embedded widget.',
         'custom_css' => 'Styles applied to this form only. Rules are automatically scoped to the form container, so they cannot affect anything outside of the embedded widget.',
     ],
     'helpers' => [
+        'inbound_url' => 'Paste this secret address into the webhook setting of the external form (method: POST). Anyone who knows it can submit, so keep it private.',
+        'inbound_save_first' => 'Save the form to get the webhook URL.',
+        'inbound_regenerate' => 'The current URL stops working immediately. Every external form must be updated with the new URL.',
+        'inbound_field_map' => 'Only needed where the external field name differs from the key of a field in this form. Fields that are not mapped are kept with the submission and on the lead.',
         'custom_css' => 'Every selector is prefixed with `#ffb-form-{slug}`. Target built-in classes like `.ffb-input`, `.ffb-label`, `.ffb-submit`, `.ffb-card`, `.ffb-error`. `@import`, `url(javascript:…)`, and external URLs are stripped on save.',
         'redirect_url' => 'Only absolute http:// or https:// URLs are allowed. Leave empty to stay on the form page and show the thank-you message.',
         'field_key' => 'Internal identifier used as the submission data key. Letters, numbers, and underscores only.',
@@ -38,6 +44,11 @@ return [
         'design_max_width' => 'Maximum width of the form on wide screens.',
     ],
     'fields' => [
+        'inbound_enabled' => 'Accept submissions from an external form',
+        'inbound_url' => 'Webhook URL',
+        'inbound_field_map' => 'Field mapping',
+        'inbound_external' => 'External field name',
+        'inbound_field' => 'Field in this form',
         'name' => 'Name',
         'slug' => 'Slug',
         'description' => 'Description',
@@ -109,6 +120,8 @@ return [
         'date' => 'Date',
     ],
     'actions' => [
+        'regenerate_inbound_token' => 'Generate new URL',
+        'add_inbound_mapping' => 'Add mapping',
         'embed_code' => 'Embed Code',
         'close' => 'Close',
         'preview' => 'Preview',
@@ -127,6 +140,8 @@ return [
         'too_many_fields' => 'Too many fields. At most :max fields are accepted.',
     ],
     'notifications' => [
+        'inbound_url_copied' => 'Webhook URL copied',
+        'inbound_token_regenerated' => 'New webhook URL generated',
         'imported' => 'Form imported as ":slug"',
         'json_invalid' => 'The provided JSON is not a valid form definition.',
         'field_copied' => 'Field JSON copied to clipboard',

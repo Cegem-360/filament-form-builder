@@ -10,6 +10,7 @@ return [
         'submission_plural' => 'Űrlap beküldések',
     ],
     'sections' => [
+        'inbound' => 'Külső űrlap (webhook)',
         'form_details' => 'Űrlap részletei',
         'form_fields' => 'Mezők',
         'design' => 'Megjelenés',
@@ -23,10 +24,15 @@ return [
         'embed_iframe' => 'Iframe beágyazás',
     ],
     'descriptions' => [
+        'inbound' => 'Tartsd meg a saját űrlapodat (WordPress, Zapier, bármilyen program), és küldd ide a beküldéseit. Ugyanúgy feldolgozzuk őket, mint ennek az űrlapnak a beküldéseit: mentés, lead létrehozása, értesítések.',
         'design' => 'Az űrlap megjelenésének testreszabása. A változások a standalone oldalon és a beágyazott widgeten egyaránt érvényesülnek.',
         'custom_css' => 'Csak erre az űrlapra érvényes stílusok. A szabályok automatikusan az űrlap-konténerre szűkülnek, így nem befolyásolják az iframe-en kívüli oldalt.',
     ],
     'helpers' => [
+        'inbound_url' => 'Ezt a titkos címet másold be a külső űrlap webhook-beállításába (metódus: POST). Aki ismeri, tud rá küldeni, ezért ne tedd közzé.',
+        'inbound_save_first' => 'Mentsd el az űrlapot, és megkapod a webhook címet.',
+        'inbound_regenerate' => 'A mostani cím azonnal megszűnik. Minden külső űrlapban át kell írni az újra.',
+        'inbound_field_map' => 'Csak ott kell, ahol a külső mező neve eltér az itteni mező kulcsától. A párosítatlan mezők is megmaradnak a beküldésben és a leadnél.',
         'custom_css' => 'Minden selector elé a rendszer `#ffb-form-{slug}` kerül. Használhatod a beépített osztályokat: `.ffb-input`, `.ffb-label`, `.ffb-submit`, `.ffb-card`, `.ffb-error`. Mentéskor az `@import`, a `url(javascript:…)` és a külső URL-ek automatikusan ki lesznek szűrve.',
         'redirect_url' => 'Csak abszolút http:// vagy https:// URL engedélyezett. Hagyd üresen, ha az űrlap oldalán szeretnéd megjeleníteni a köszönő üzenetet.',
         'field_key' => 'Belső azonosító, ezen a néven tárolódik a beküldött adat. Csak betű, szám és aláhúzás megengedett.',
@@ -38,6 +44,11 @@ return [
         'design_max_width' => 'Az űrlap maximális szélessége széles képernyőn.',
     ],
     'fields' => [
+        'inbound_enabled' => 'Beküldések fogadása külső űrlapról',
+        'inbound_url' => 'Webhook cím',
+        'inbound_field_map' => 'Mezőpárosítás',
+        'inbound_external' => 'Külső mező neve',
+        'inbound_field' => 'Mező ebben az űrlapban',
         'name' => 'Név',
         'slug' => 'Slug',
         'description' => 'Leírás',
@@ -109,6 +120,8 @@ return [
         'date' => 'Dátum',
     ],
     'actions' => [
+        'regenerate_inbound_token' => 'Új cím generálása',
+        'add_inbound_mapping' => 'Párosítás hozzáadása',
         'embed_code' => 'Beágyazó kód',
         'close' => 'Bezárás',
         'preview' => 'Előnézet',
@@ -127,6 +140,8 @@ return [
         'too_many_fields' => 'Túl sok mező. Legfeljebb :max mező fogadható.',
     ],
     'notifications' => [
+        'inbound_url_copied' => 'Webhook cím vágólapra másolva',
+        'inbound_token_regenerated' => 'Új webhook cím generálva',
         'imported' => 'Form importálva: ":slug"',
         'json_invalid' => 'A megadott JSON nem érvényes formdefiníció.',
         'field_copied' => 'Mező JSON-je a vágólapra másolva',
