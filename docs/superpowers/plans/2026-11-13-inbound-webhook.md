@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Package repo: `~/Herd/filament-form-builder`; host app: `~/Herd/marketinghub`. Tasks 1–6 are in the package, Task 7 in the host app.
+- Package repo: `~/Herd/filament-form-builder`; host app: `~/Herd/marketinghub`. Tasks 1–7 are in the package, Task 8 in the host app.
 - Route: `POST forms/{slug}/inbound/{token}`, config `routes.inbound_path`, middleware config `routes.inbound_middleware` default `['api']`, throttle config `routes.throttle.inbound` default `'30,1'`.
 - Token: 64 random chars (`Str::random(64)`), compared with `hash_equals`; generated when inbound is first enabled; regenerable.
 - Every rejection of the form/token (unknown slug, inactive form, inbound disabled, wrong token) → identical `404`.
@@ -122,7 +122,32 @@
 - [ ] **Step 2: Run** `vendor/bin/pest` → PASS (no regressions); `vendor/bin/pint`.
 - [ ] **Step 3: Commit** `feat(inbound): admin section for webhook URL, token and field mapping`
 
-### Task 6: Docs and release
+### Task 6: Admin help page „Külső űrlapok bekötése”
+
+**Files:**
+- Create: `src/Filament/Pages/InboundWebhookHelp.php`, `resources/views/pages/inbound-webhook-help.blade.php`
+- Modify: `src/FilamentFormBuilderPlugin.php:42` (`$panel->pages([FormJsonSchemaHelp::class, InboundWebhookHelp::class])`), `src/Filament/Resources/RegistrationForms/Schemas/Sections/InboundWebhookSection.php` (link „Részletes útmutató” → `InboundWebhookHelp::getUrl()`), both lang files (`inbound_help.*` keys)
+- Test: `tests/Feature/InboundWebhookHelpTest.php`
+
+**Interfaces:**
+- Follows `FormJsonSchemaHelp` exactly (same navigation icon style `Heroicon::QuestionMarkCircle` → use `Heroicon::ArrowDownOnSquare`, same view namespace).
+- Produces: `InboundWebhookHelp::getNavigationLabel()`, `getTitle()`, `getExamplePayloadJson(): string` (pretty JSON of `['email' => 'anna@example.com', 'first_name' => 'Anna', 'utm_source' => 'wordpress']`), `getCurlExample(): string` (`curl -X POST https://your-app.test/forms/{slug}/inbound/{token} -H 'Content-Type: application/json' -d '<payload>'`), `getResponseCodes(): array<int, string>` (201, 404, 413, 422, 429 → translated meaning).
+- Page sections (Filament `x-filament::section`, same markup style as `form-json-schema-help.blade.php`), Hungarian wording decided by the builder, content fixed:
+  1. Mire jó — saját űrlap megtartása, a beküldések leadként érkeznek.
+  2. Beállítás 3 lépésben — webhook bekapcsolása az űrlapon, cím másolása, mezőpárosítás (példa: `your-email` → `email`; azonos nevű mezők maguktól párosulnak; a párosítatlan mezők is megmaradnak).
+  3. Példa kérés — JSON és form-encoded (`fields[email]=…` → `fields.email`), `getCurlExample()`.
+  4. Válaszkódok táblázat — `getResponseCodes()`.
+  5. Bekötés eszközönként — Contact Form 7 („CF7 to Webhook” bővítmény), WPForms és Gravity Forms (Webhooks bővítmény), Elementor Pro (Actions After Submit → Webhook), Zapier / Make (Webhooks by Zapier → POST).
+  6. Biztonság — a cím titkos, újragenerálással azonnal érvénytelen a régi; percenként 30 kérés; max. 100 mező.
+  7. Hibaelhárítás — 404: rossz/újragenerált cím vagy kikapcsolt webhook; 422: kötelező mező hiányzik vagy rossz párosítás; a beküldések a „Beküldések” listában látszanak.
+
+- [ ] **Step 1: Write failing tests** — `it('exposes a navigation label and title via translations')`; `it('builds a valid example payload')` (`json_decode` → array with key `email`); `it('lists every response code the endpoint returns')` (keys exactly `[201, 404, 413, 422, 429]`); `it('renders the curl example with the inbound path')` (contains `/inbound/` and `Content-Type: application/json`).
+- [ ] **Step 2: Run** → FAIL.
+- [ ] **Step 3: Implement** page, view, plugin registration, section link, translations (en + hu).
+- [ ] **Step 4: Run** `vendor/bin/pest` → PASS; `vendor/bin/pint`.
+- [ ] **Step 5: Commit** `feat(inbound): admin help page for external form integration`
+
+### Task 7: Docs and release
 
 **Files:**
 - Modify: `README.md` (new "Receive submissions from external forms" section: URL, payload formats, mapping, 201/404/413/422/429 responses, WordPress pointers), spec status → Implemented.
@@ -130,17 +155,17 @@
 - [ ] **Step 1: Write** the README section.
 - [ ] **Step 2: Commit** `docs: inbound webhook`, `git push`, `git tag v0.5.0 && git push --tags` (ask the user before pushing/tagging).
 
-### Task 7: Host app (marketinghub)
+### Task 8: Host app (marketinghub)
 
 **Files:**
 - Modify: `composer.lock` (via `composer update madbox-99/filament-form-builder`), `app/Listeners/CreateLeadFromFormSubmission.php`
 - Test: `tests/Feature/Listeners/CreateLeadFromFormSubmissionTest.php` (create), `tests/Feature/Filament/RegistrationFormResourceTest.php` (extend)
 
 **Interfaces:**
-- Consumes: `FormSubmissionProcessed::$unmappedData` (Task 2), `RegistrationForm::getInboundUrl()` (Task 1), route `form-builder.form.inbound` (Task 4).
+- Consumes: `FormSubmissionProcessed::$unmappedData` (Task 2), `RegistrationForm::getInboundUrl()` (Task 1), route `form-builder.form.inbound` (Task 4), `InboundWebhookHelp` page (Task 6).
 
 - [ ] **Step 1: Update** the package (`composer update madbox-99/filament-form-builder` → v0.5.0), `php artisan migrate`.
-- [ ] **Step 2: Write failing tests** — listener: `it('stores unmapped inbound data in the lead custom fields')` (dispatch event with `unmappedData ['utm_source' => 'wp']`, lead `custom_fields['utm_source'] === 'wp'`; existing unmapped blueprint fields still present, blueprint fields win on key clash); end-to-end: `it('creates a lead from an inbound webhook')` (form with `createLeadIfHasEmail`, inbound enabled, POST JSON to the inbound URL → 201, `Lead` with that e-mail and `team_id` of the form). Resource: `it('shows the inbound url after enabling the webhook')` (edit page, fill `inbound_enabled` true, save, record has a token, `assertSee($record->getInboundUrl())`), `it('regenerates the inbound token')` (call `regenerateInboundToken` action → token changed).
+- [ ] **Step 2: Write failing tests** — listener: `it('stores unmapped inbound data in the lead custom fields')` (dispatch event with `unmappedData ['utm_source' => 'wp']`, lead `custom_fields['utm_source'] === 'wp'`; existing unmapped blueprint fields still present, blueprint fields win on key clash); end-to-end: `it('creates a lead from an inbound webhook')` (form with `createLeadIfHasEmail`, inbound enabled, POST JSON to the inbound URL → 201, `Lead` with that e-mail and `team_id` of the form). Resource: `it('shows the inbound url after enabling the webhook')` (edit page, fill `inbound_enabled` true, save, record has a token, `assertSee($record->getInboundUrl())`), `it('regenerates the inbound token')` (call `regenerateInboundToken` action → token changed), `it('renders the inbound webhook help page')` (`get(InboundWebhookHelp::getUrl(tenant: $team))->assertOk()`, page is reachable for a panel user — check Shield permissions; if `HasPageShield`-style gating blocks package pages, grant it in the existing page-permission migration pattern).
 - [ ] **Step 3: Run** → FAIL.
 - [ ] **Step 4: Implement** in the listener: merge `$event->unmappedData` into `$customFields` before blueprint values (`[...$event->unmappedData, ...$customFields]`).
 - [ ] **Step 5: Run** `php artisan test --compact --parallel` → PASS; `vendor/bin/rector process`, `vendor/bin/pint --dirty --format agent`.

@@ -44,6 +44,8 @@ Logic shared with `PublicRegistrationForm::submit()` (normalise → persist → 
 
 **Admin (form edit page), new "External form (webhook)" section:** enable toggle; read-only webhook URL with copy button; "Regenerate token" action (confirmation, old URL stops working); Repeater for the mapping (external field name text → form field select from the form's own fields); a short help text with a `curl` example and pointers for CF7 / WPForms / Elementor. Translations: en + hu.
 
+**Admin help page** „Külső űrlapok bekötése” (like the existing JSON schema help page): what it is for, 3-step setup, example request (JSON + form-encoded), response codes, setup per tool (CF7, WPForms, Gravity Forms, Elementor Pro, Zapier/Make), security, troubleshooting. Linked from the form's webhook section.
+
 **Security:** secret token (64 chars, regenerable), per-IP throttle, active+enabled check, validation, payload size cap (`inbound.max_fields` default 100, values truncated as the embedded form does). No honeypot: it only works on forms we render, and webhooks are server-to-server.
 
 **Host app (marketinghub), after a package release:**
