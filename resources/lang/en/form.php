@@ -124,6 +124,7 @@ return [
     'errors' => [
         'not_found' => 'Form not found',
         'rate_limit' => 'Too many submissions. Please try again in :seconds seconds.',
+        'too_many_fields' => 'Too many fields. At most :max fields are accepted.',
     ],
     'notifications' => [
         'imported' => 'Form imported as ":slug"',

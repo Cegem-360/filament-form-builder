@@ -124,6 +124,7 @@ return [
     'errors' => [
         'not_found' => 'Az űrlap nem található',
         'rate_limit' => 'Túl sok beküldés. Próbáld újra :seconds másodperc múlva.',
+        'too_many_fields' => 'Túl sok mező. Legfeljebb :max mező fogadható.',
     ],
     'notifications' => [
         'imported' => 'Form importálva: ":slug"',

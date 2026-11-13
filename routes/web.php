@@ -4,13 +4,25 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Madbox99\FilamentFormBuilder\Http\Controllers\EmbedScriptController;
+use Madbox99\FilamentFormBuilder\Http\Controllers\InboundSubmissionController;
 use Madbox99\FilamentFormBuilder\Http\Controllers\PublicFormController;
+use Madbox99\FilamentFormBuilder\Http\Middleware\ExpectsJson;
 
 $middleware = (array) config('filament-form-builder.routes.middleware', ['web']);
 $throttle = (array) config('filament-form-builder.routes.throttle', []);
 $showPath = (string) config('filament-form-builder.routes.show_path', 'forms/{slug}');
 $embedPath = (string) config('filament-form-builder.routes.embed_path', 'embed/forms/{slug}');
 $scriptPath = (string) config('filament-form-builder.routes.widget_script_path', 'forms/embed.js');
+$inboundPath = (string) config('filament-form-builder.routes.inbound_path', 'forms/{slug}/inbound/{token}');
+$inboundMiddleware = (array) config('filament-form-builder.routes.inbound_middleware', ['api']);
+
+// Inbound webhook: server-to-server POSTs from external forms — no session,
+// no CSRF. Registered first so `/forms/{slug}` never shadows it.
+Route::middleware($inboundMiddleware)->group(function () use ($inboundPath): void {
+    Route::post($inboundPath, InboundSubmissionController::class)
+        ->middleware(ExpectsJson::class)
+        ->name('form-builder.form.inbound');
+});
 
 Route::middleware($middleware)->group(function () use ($showPath, $embedPath, $scriptPath, $throttle): void {
     // Literal routes must be registered before catch-all {slug} routes so
