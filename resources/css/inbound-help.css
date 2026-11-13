@@ -41,3 +41,4 @@ ul.ffb-help-list { list-style: disc; }
 .dark .ffb-help-figure img, .dark .ffb-help-table-wrap, .dark .ffb-help-tool { border-color: rgb(255 255 255 / .1); }
 .dark .ffb-help-table th { background: rgb(255 255 255 / .05); }
 .dark .ffb-help-table td { border-top-color: rgb(255 255 255 / .1); }
+.ffb-help-links { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0; }

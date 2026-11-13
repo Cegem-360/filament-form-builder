@@ -44,3 +44,7 @@ it('only serves whitelisted help images', function (): void {
 
     InboundWebhookHelp::image('../../composer');
 })->throws(InvalidArgumentException::class);
+
+it('builds no setup links without a Filament panel', function (): void {
+    expect((new InboundWebhookHelp)->getSetupLinks())->toBe(['step1' => [], 'step2' => [], 'step3' => [], 'troubleshooting' => []]);
+});
