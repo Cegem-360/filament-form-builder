@@ -167,6 +167,16 @@ return [
     'submitting' => 'Submitting...',
     'select_option' => 'Select an option',
     'inbound_help' => [
+        'wp_heading' => 'WordPress plugin (the easiest)',
+        'wp_body' => 'No separate webhook add-on is needed for WordPress: our plugin forwards Contact Form 7, WPForms, Elementor Pro and Gravity Forms submissions here by itself.',
+        'wp_download' => 'Download the WordPress plugin (.zip)',
+        'wp_steps' => [
+            'Download the plugin with the button above.',
+            'WordPress → Plugins → Add New → Upload Plugin: choose the zip, then Install and Activate.',
+            'Here in MarketingHub switch on the webhook of the form and copy its URL (see "Setup in 3 steps" below).',
+            'WordPress → Settings → MarketingHub: pick the WordPress form, paste the URL, Save, then "Test".',
+            'Submit a test on the site: it shows up under Form submissions. Map field names (e.g. your-email) in the field mapping of the webhook section.',
+        ],
         'link_forms' => 'Open forms',
         'link_new_form' => 'Create a new form',
         'link_form_webhook' => ':name – webhook settings',

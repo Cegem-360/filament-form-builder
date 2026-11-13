@@ -127,6 +127,13 @@ step-by-step guides per tool (disable with `filament.register_help_page`). Its
 stylesheet ships as a Filament asset, so run `php artisan filament:assets` after
 updating the package.
 
+**WordPress plugin.** `wordpress-plugin/cegem360-marketinghub` is an installable
+WordPress plugin (PHP 7.4+, WordPress 5.8+) that forwards Contact Form 7, WPForms,
+Elementor Pro and Gravity Forms submissions to the webhook. It is served as a zip
+at `GET /forms/wordpress-plugin.zip` (route `form-builder.wordpress-plugin`) and
+linked from the help page. In WordPress: Settings → MarketingHub → pick the form,
+paste the webhook URL, Save, Test.
+
 Config keys: `routes.inbound_path`, `routes.inbound_middleware` (default `['api']`),
 `routes.throttle.inbound`, `inbound.max_fields`.
 

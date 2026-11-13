@@ -167,6 +167,16 @@ return [
     'submitting' => 'Küldés...',
     'select_option' => 'Válassz egy opciót',
     'inbound_help' => [
+        'wp_heading' => 'WordPress-bővítmény (a legegyszerűbb)',
+        'wp_body' => 'WordPress-oldalhoz nem kell külön webhook-bővítményt keresni: a saját bővítményünk a Contact Form 7, WPForms, Elementor Pro és Gravity Forms űrlapok beküldéseit magától továbbítja ide.',
+        'wp_download' => 'WordPress-bővítmény letöltése (.zip)',
+        'wp_steps' => [
+            'Töltsd le a bővítményt a fenti gombbal.',
+            'WordPress → Bővítmények → Új hozzáadása → Bővítmény feltöltése: válaszd ki a zip-et, majd Telepítés és Aktiválás.',
+            'Itt a MarketingHubban kapcsold be a webhookot az űrlapon, és másold ki a címét (lásd lent: „Beállítás 3 lépésben”).',
+            'WordPress → Beállítások → MarketingHub: válaszd ki a WordPress-űrlapot, illeszd be a címet, Mentés, majd „Teszt”.',
+            'Küldj be egy próbát az oldalon: megjelenik az Űrlap beküldések között. A mezőneveket (pl. your-email) a webhook szakasz mezőpárosítójában párosíthatod.',
+        ],
         'link_forms' => 'Űrlapok megnyitása',
         'link_new_form' => 'Új űrlap létrehozása',
         'link_form_webhook' => ':name – webhook beállításai',
