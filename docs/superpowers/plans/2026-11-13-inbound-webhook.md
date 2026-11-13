@@ -141,9 +141,17 @@
   6. Biztonság — a cím titkos, újragenerálással azonnal érvénytelen a régi; percenként 30 kérés; max. 100 mező.
   7. Hibaelhárítás — 404: rossz/újragenerált cím vagy kikapcsolt webhook; 422: kötelező mező hiányzik vagy rossz párosítás; a beküldések a „Beküldések” listában látszanak.
 
+**Images, links, descriptions (added on request):**
+- **Flow diagram:** inline SVG in the view (`resources/views/pages/partials/inbound-flow.blade.php`): „Külső űrlap (WordPress, Zapier…)” → „Titkos webhook cím” → „Mezőpárosítás + ellenőrzés” → „Beküldés + lead”. Uses `currentColor`/Tailwind text classes so it works in light and dark mode.
+- **Screenshots of our own admin UI:** `resources/images/inbound/01-enable.png` (webhook toggle + URL on the form edit page), `02-mapping.png` (field mapping repeater), `03-submissions.png` (an inbound submission in the Submissions list). Captured after Task 5 in the browser on `marketinghub.test` with demo data (no real customer data), max 1400 px wide, optimised PNG. Rendered as `data:` URIs via `InboundWebhookHelp::image(string $name): string` (base64 of the file in `resources/images/inbound/`, whitelist of the three names) — no publish step, consistent with the package's route-served assets.
+- **Links (open in new tab, `rel="noopener"`):** official plugin / docs page per tool — Contact Form 7 webhook add-on (wordpress.org plugin page), WPForms Webhooks addon docs, Gravity Forms Webhooks add-on docs, Elementor Pro „Webhook” action docs, Zapier „Webhooks by Zapier”, Make „Webhooks” module. Every URL checked to return 200 before commit; kept in one `InboundWebhookHelp::toolGuides(): array<int, array{name: string, url: string, steps: list<string>}>` method so they are easy to update.
+- **Per-tool description:** 3–5 numbered steps each (where to find the webhook setting in that tool, paste the URL, choose POST + JSON or form data, map field names), written in Hungarian and English.
+- **Tests add:** `it('only serves whitelisted help images')` (`image('01-enable')` starts with `data:image/png;base64,`, unknown name throws `InvalidArgumentException`); `it('lists a guide with an https link for every tool')` (6 entries, each `url` starts with `https://`, `steps` non-empty).
+
 - [ ] **Step 1: Write failing tests** — `it('exposes a navigation label and title via translations')`; `it('builds a valid example payload')` (`json_decode` → array with key `email`); `it('lists every response code the endpoint returns')` (keys exactly `[201, 404, 413, 422, 429]`); `it('renders the curl example with the inbound path')` (contains `/inbound/` and `Content-Type: application/json`).
 - [ ] **Step 2: Run** → FAIL.
-- [ ] **Step 3: Implement** page, view, plugin registration, section link, translations (en + hu).
+- [ ] **Step 3: Implement** page, view, flow diagram, `image()` / `toolGuides()`, plugin registration, section link, translations (en + hu).
+- [ ] **Step 3b: Capture** the three screenshots in the browser (after Task 5 works on `marketinghub.test` via a path repository / local symlink of the package), save to `resources/images/inbound/`, verify every guide URL returns 200.
 - [ ] **Step 4: Run** `vendor/bin/pest` → PASS; `vendor/bin/pint`.
 - [ ] **Step 5: Commit** `feat(inbound): admin help page for external form integration`
 
