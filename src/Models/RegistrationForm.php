@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use Madbox99\FilamentFormBuilder\Casts\DesignTokensCast;
 use Madbox99\FilamentFormBuilder\Casts\SubmissionActionsCast;
 use Madbox99\FilamentFormBuilder\Contracts\FormTenantResolver;
@@ -89,6 +90,50 @@ class RegistrationForm extends Model
         );
     }
 
+    /**
+     * Return the inbound webhook token, generating and saving one first if
+     * the form does not have one yet.
+     */
+    public function ensureInboundToken(): string
+    {
+        if (is_string($this->inbound_token) && $this->inbound_token !== '') {
+            return $this->inbound_token;
+        }
+
+        return $this->regenerateInboundToken();
+    }
+
+    /**
+     * Replace the inbound webhook token. The previous webhook URL stops
+     * working immediately.
+     */
+    public function regenerateInboundToken(): string
+    {
+        $token = Str::random(64);
+
+        $this->forceFill(['inbound_token' => $token])->save();
+
+        return $token;
+    }
+
+    public function inboundTokenMatches(string $token): bool
+    {
+        if (! is_string($this->inbound_token) || $this->inbound_token === '' || $token === '') {
+            return false;
+        }
+
+        return hash_equals($this->inbound_token, $token);
+    }
+
+    public function getInboundUrl(): ?string
+    {
+        if (! is_string($this->inbound_token) || $this->inbound_token === '') {
+            return null;
+        }
+
+        return route('form-builder.form.inbound', [$this->slug, $this->inbound_token]);
+    }
+
     public function tenantSlug(): ?string
     {
         $foreignKey = (string) config('filament-form-builder.tenant_foreign_key', 'team_id');
@@ -113,6 +158,8 @@ class RegistrationForm extends Model
             'design_tokens' => DesignTokensCast::class,
             'is_active' => 'boolean',
             'submissions_count' => 'integer',
+            'inbound_enabled' => 'boolean',
+            'inbound_field_map' => 'array',
         ];
     }
 }
