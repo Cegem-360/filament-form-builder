@@ -6,6 +6,7 @@ namespace Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Sche
 
 use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -15,6 +16,7 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Icons\Heroicon;
+use Madbox99\FilamentFormBuilder\Filament\Pages\InboundWebhookHelp;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
 
@@ -28,6 +30,15 @@ final class InboundWebhookSection
     {
         return Section::make(__('filament-form-builder::form.sections.inbound'))
             ->description(__('filament-form-builder::form.descriptions.inbound'))
+            ->afterHeader([
+                Action::make('inboundHelp')
+                    ->label(__('filament-form-builder::form.inbound_help.link'))
+                    ->icon(Heroicon::OutlinedQuestionMarkCircle)
+                    ->link()
+                    ->url(fn (): string => InboundWebhookHelp::getUrl())
+                    ->openUrlInNewTab()
+                    ->visible(fn (): bool => (bool) config('filament-form-builder.filament.register_help_page', true)),
+            ])
             ->collapsible()
             ->schema([
                 Toggle::make('inbound_enabled')
@@ -64,6 +75,10 @@ final class InboundWebhookSection
                 Repeater::make('inbound_field_map')
                     ->label(__('filament-form-builder::form.fields.inbound_field_map'))
                     ->helperText(__('filament-form-builder::form.helpers.inbound_field_map'))
+                    ->table([
+                        TableColumn::make(__('filament-form-builder::form.fields.inbound_external'))->markAsRequired(),
+                        TableColumn::make(__('filament-form-builder::form.fields.inbound_field'))->markAsRequired(),
+                    ])
                     ->schema([
                         TextInput::make('external')
                             ->label(__('filament-form-builder::form.fields.inbound_external'))
@@ -75,7 +90,7 @@ final class InboundWebhookSection
                             ->options(fn (Get $get): array => self::fieldOptions($get('../../fields')))
                             ->required(),
                     ])
-                    ->columns(2)
+                    ->reorderable(false)
                     ->defaultItems(0)
                     ->addActionLabel(__('filament-form-builder::form.actions.add_inbound_mapping'))
                     ->visible(fn (Get $get): bool => (bool) $get('inbound_enabled'))

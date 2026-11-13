@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Madbox99\FilamentFormBuilder;
 
+use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
@@ -59,6 +60,7 @@ final class FilamentFormBuilderServiceProvider extends ServiceProvider
 
         FilamentAsset::register([
             Js::make('ffb-copy-to-clipboard', __DIR__.'/../resources/js/copy-to-clipboard.js'),
+            Css::make('ffb-inbound-help', __DIR__.'/../resources/css/inbound-help.css'),
         ], 'madbox99/filament-form-builder');
 
         if ((bool) config('filament-form-builder.routes.enabled', true)) {
