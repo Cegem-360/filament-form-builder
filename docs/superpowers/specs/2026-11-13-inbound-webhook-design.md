@@ -1,6 +1,6 @@
 # Inbound webhook: accept submissions from external forms
 
-**Status:** Draft (awaiting approval)
+**Status:** Implemented (v0.5.0)
 **Date:** 2026-11-13
 **Scope:** Let a form receive submissions from forms that live outside the package (WordPress Contact Form 7 / WPForms / Gravity Forms / Elementor, Zapier / Make, any program) through a per-form secret URL, with a field mapping, so they run through the same pipeline as the embedded form (save submission → `FormSubmissionProcessed` → host app creates a Lead, sends notifications).
 

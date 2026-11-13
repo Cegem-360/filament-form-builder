@@ -112,3 +112,21 @@ it('ImportFormAction::handle() rejects malformed JSON', function (): void {
     expect(fn () => ImportFormAction::handle(json: '{not-json', file: null))
         ->toThrow(ValidationException::class);
 });
+
+it('ignores inbound webhook and bookkeeping keys in an imported file', function (): void {
+    $payload = FormBlueprintSchema::fullExample();
+    $payload['slug'] = 'planted';
+    $payload['inbound_enabled'] = true;
+    $payload['inbound_token'] = str_repeat('a', 64);
+    $payload['inbound_field_map'] = [['external' => 'x', 'field' => 'email']];
+    $payload['submissions_count'] = 999;
+
+    $form = (new ImportFormFromJson)->execute($payload);
+    $again = (new ImportFormFromJson)->execute($payload);
+
+    expect($form->inbound_enabled)->toBeFalse()
+        ->and($form->inbound_token)->toBeNull()
+        ->and($form->inbound_field_map)->toBeNull()
+        ->and($form->submissions_count)->toBe(0)
+        ->and($again->inbound_token)->toBeNull();
+});

@@ -10,6 +10,7 @@ use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Se
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\DesignSection;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\DetailsSection;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\FieldsSection;
+use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\InboundWebhookSection;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\SubmissionActionsSection;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\Sections\SubmissionSettingsSection;
 
@@ -28,6 +29,7 @@ final class RegistrationFormForm
                         CustomCssSection::make(),
                         SubmissionSettingsSection::make(),
                         SubmissionActionsSection::make(),
+                        InboundWebhookSection::make(),
                     ]),
                 FieldsSection::make(),
             ]);

@@ -1,0 +1,43 @@
+/* Inbound webhook help page. Plain CSS shipped with the package so the page
+   looks right without the host app compiling the package views into its
+   Tailwind theme. Dark mode follows Filament's `.dark` class. */
+.ffb-help { display: flex; flex-direction: column; gap: 1.5rem; }
+.ffb-help-text { font-size: .875rem; line-height: 1.5rem; color: rgb(55 65 81); margin: 0; }
+.ffb-help-h3 { font-size: 1rem; font-weight: 600; color: rgb(3 7 18); margin: 0 0 .5rem; }
+.ffb-help-h4 { font-size: .875rem; font-weight: 500; color: rgb(3 7 18); margin: 1rem 0 .5rem; }
+.ffb-help-steps { display: flex; flex-direction: column; gap: 2rem; }
+.ffb-help-figure { margin: .75rem 0 0; }
+.ffb-help-figure img { display: block; width: 100%; max-width: 48rem; height: auto; border-radius: .5rem; border: 1px solid rgb(229 231 235); box-shadow: 0 1px 2px rgb(0 0 0 / .05); }
+.ffb-help-figure figcaption { margin-top: .5rem; font-size: .75rem; color: rgb(107 114 128); }
+.ffb-help-code { margin: 0; overflow: auto; border-radius: .5rem; background: rgb(17 24 39); color: rgb(243 244 246); padding: 1rem; font-size: .75rem; line-height: 1.25rem; }
+.ffb-help-flow { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; margin-top: 1rem; }
+.ffb-help-flow-step { flex: 1; border: 1px solid rgb(229 231 235); border-radius: .5rem; background: #fff; padding: .75rem 1rem; text-align: center; }
+.ffb-help-flow-step-final { border-color: var(--primary-500, rgb(99 102 241)); }
+.ffb-help-flow-title { font-size: .875rem; font-weight: 600; color: rgb(3 7 18); }
+.ffb-help-flow-sub { font-size: .75rem; color: rgb(107 114 128); }
+.ffb-help-flow-arrow { width: 1.25rem; height: 1.25rem; flex-shrink: 0; align-self: center; color: rgb(156 163 175); transform: rotate(90deg); }
+@media (min-width: 768px) {
+    .ffb-help-flow { flex-direction: row; align-items: center; }
+    .ffb-help-flow-arrow { transform: none; }
+}
+.ffb-help-table-wrap { margin-top: .5rem; overflow: hidden; border: 1px solid rgb(229 231 235); border-radius: .5rem; }
+.ffb-help-table { width: 100%; border-collapse: collapse; text-align: left; font-size: .875rem; }
+.ffb-help-table th { background: rgb(249 250 251); padding: .5rem .75rem; font-weight: 500; }
+.ffb-help-table td { padding: .5rem .75rem; border-top: 1px solid rgb(229 231 235); color: rgb(55 65 81); vertical-align: top; }
+.ffb-help-table td:first-child { font-family: ui-monospace, monospace; white-space: nowrap; }
+.ffb-help-tools { display: grid; gap: 1rem; }
+@media (min-width: 768px) { .ffb-help-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ffb-help-tool { border: 1px solid rgb(229 231 235); border-radius: .5rem; padding: 1rem; }
+.ffb-help-tool-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+.ffb-help-list { margin: .5rem 0 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: .25rem; font-size: .875rem; line-height: 1.5rem; color: rgb(55 65 81); }
+ol.ffb-help-list { list-style: decimal; }
+ul.ffb-help-list { list-style: disc; }
+
+.dark .ffb-help-text, .dark .ffb-help-list, .dark .ffb-help-table td { color: rgb(209 213 219); }
+.dark .ffb-help-h3, .dark .ffb-help-h4, .dark .ffb-help-flow-title { color: #fff; }
+.dark .ffb-help-flow-sub, .dark .ffb-help-figure figcaption { color: rgb(156 163 175); }
+.dark .ffb-help-flow-step { background: rgb(255 255 255 / .05); border-color: rgb(255 255 255 / .1); }
+.dark .ffb-help-flow-step-final { border-color: var(--primary-400, rgb(129 140 248)); }
+.dark .ffb-help-figure img, .dark .ffb-help-table-wrap, .dark .ffb-help-tool { border-color: rgb(255 255 255 / .1); }
+.dark .ffb-help-table th { background: rgb(255 255 255 / .05); }
+.dark .ffb-help-table td { border-top-color: rgb(255 255 255 / .1); }

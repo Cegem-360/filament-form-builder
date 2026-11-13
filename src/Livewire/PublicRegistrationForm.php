@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Madbox99\FilamentFormBuilder\Livewire;
 
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Js;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Madbox99\FilamentFormBuilder\Actions\ProcessFormSubmission;
-use Madbox99\FilamentFormBuilder\Events\FormSubmissionProcessed;
-use Madbox99\FilamentFormBuilder\Models\FormSubmission;
+use Madbox99\FilamentFormBuilder\Actions\SubmitRegistrationForm;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Madbox99\FilamentFormBuilder\Support\CssSanitizer;
 use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
@@ -70,7 +67,7 @@ final class PublicRegistrationForm extends Component
         $this->initializeFormData();
     }
 
-    public function submit(ProcessFormSubmission $processor): void
+    public function submit(SubmitRegistrationForm $submitter): void
     {
         $form = $this->resolveForm();
 
@@ -99,19 +96,7 @@ final class PublicRegistrationForm extends Component
 
         $this->validate($this->buildValidationRules(), [], $this->buildValidationAttributes());
 
-        $submission = null;
-
-        DB::transaction(function () use ($processor, $form, &$submission): void {
-            $submission = $processor->handle($form, $this->normalisedFormData());
-            $form->increment('submissions_count');
-        });
-
-        FormSubmissionProcessed::dispatch(
-            $form,
-            $submission instanceof FormSubmission ? $submission : null,
-            $this->normalisedFormData(),
-            $form->submission_actions,
-        );
+        $submitter->handle($form, $this->normalisedFormData());
 
         $this->submitted = true;
 

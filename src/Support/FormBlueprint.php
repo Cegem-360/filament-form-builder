@@ -18,7 +18,7 @@ final class FormBlueprint
      *
      * @var list<string>
      */
-    private const DATA_KEYS = [
+    public const DATA_KEYS = [
         'name',
         'slug',
         'description',

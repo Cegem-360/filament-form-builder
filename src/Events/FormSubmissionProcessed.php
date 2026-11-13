@@ -21,12 +21,16 @@ final readonly class FormSubmissionProcessed
     use Dispatchable;
 
     /**
-     * @param  array<string, mixed>  $formData
+     * @param  array<string, mixed>  $formData  values keyed by form field key
+     * @param  array<string, mixed>  $unmappedData  extra values an external form sent through the inbound webhook
+     * @param  string  $channel  'form' for the embedded form, 'inbound' for the webhook
      */
     public function __construct(
         public RegistrationForm $form,
         public ?FormSubmission $submission,
         public array $formData,
         public SubmissionActions $actions,
+        public array $unmappedData = [],
+        public string $channel = 'form',
     ) {}
 }

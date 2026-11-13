@@ -41,11 +41,29 @@ return [
         'show_path' => 'forms/{slug}',
         'embed_path' => 'embed/forms/{slug}',
         'widget_script_path' => 'forms/embed.js',
+        'inbound_path' => 'forms/{slug}/inbound/{token}',
+        // Inbound webhooks are server-to-server: no session, no CSRF.
+        'inbound_middleware' => ['api'],
         'throttle' => [
             'show' => '60,1',
             'embed' => '60,1',
             'script' => '120,1',
+            'inbound' => '30,1',
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inbound webhook
+    |--------------------------------------------------------------------------
+    |
+    | External forms (WordPress, Zapier, any HTTP client) can POST submissions
+    | to a form's secret inbound URL. `max_fields` caps the number of
+    | (flattened) payload keys accepted per request.
+    |
+    */
+    'inbound' => [
+        'max_fields' => 100,
     ],
 
     /*

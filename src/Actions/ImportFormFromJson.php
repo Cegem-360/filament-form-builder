@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Madbox99\FilamentFormBuilder\Actions;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
@@ -25,9 +26,9 @@ final class ImportFormFromJson
 
         $payload['slug'] = $this->uniqueSlug((string) $payload['slug']);
 
-        unset($payload['schema_version']);
-
-        $form = RegistrationForm::create($payload);
+        // Only the form definition is importable: never the webhook token,
+        // the tenant key or counters an imported file might carry.
+        $form = RegistrationForm::create(Arr::only($payload, FormBlueprint::DATA_KEYS));
 
         return $form->refresh();
     }
