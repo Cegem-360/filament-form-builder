@@ -107,6 +107,10 @@ return [
         'json_file' => 'JSON file',
         'json_text' => 'JSON text',
     ],
+    'values' => [
+        'yes' => 'Yes',
+        'no' => 'No',
+    ],
     'field_types' => [
         'text_input' => 'Text',
         'email' => 'Email',

@@ -107,6 +107,10 @@ return [
         'json_file' => 'JSON fájl',
         'json_text' => 'JSON szöveg',
     ],
+    'values' => [
+        'yes' => 'Igen',
+        'no' => 'Nem',
+    ],
     'field_types' => [
         'text_input' => 'Szöveg',
         'email' => 'Email',
