@@ -163,6 +163,10 @@ return [
     'submitting' => 'Submitting...',
     'select_option' => 'Select an option',
     'inbound_help' => [
+        'link_forms' => 'Open forms',
+        'link_new_form' => 'Create a new form',
+        'link_form_webhook' => ':name – webhook settings',
+        'link_submissions' => 'Open form submissions',
         'navigation_label' => 'Connect external forms',
         'title' => 'Connect external forms (webhook)',
         'link' => 'Detailed guide with screenshots',

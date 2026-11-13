@@ -1,4 +1,5 @@
 @php($t = fn (string $key) => __('filament-form-builder::form.inbound_help.'.$key))
+@php($links = $this->getSetupLinks())
 <x-filament-panels::page>
     <div class="ffb-help">
         <x-filament::section :heading="$t('intro_heading')">
@@ -14,6 +15,7 @@
                     <div>
                         <h3 class="ffb-help-h3">{{ $t($step.'_title') }}</h3>
                         <p class="ffb-help-text">{{ $t($step.'_body') }}</p>
+                        @include('filament-form-builder::pages.partials.inbound-links', ['items' => $links[$step]])
                         @if ($image)
                             <figure class="ffb-help-figure">
                                 <img src="{{ \Madbox99\FilamentFormBuilder\Filament\Pages\InboundWebhookHelp::image($image) }}"
@@ -84,6 +86,7 @@
         </x-filament::section>
 
         <x-filament::section :heading="$t('troubleshooting_heading')">
+            @include('filament-form-builder::pages.partials.inbound-links', ['items' => $links['troubleshooting']])
             <ul class="ffb-help-list">
                 @foreach (__('filament-form-builder::form.inbound_help.troubleshooting_items') as $item)
                     <li>{{ $item }}</li>

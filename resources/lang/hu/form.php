@@ -163,6 +163,10 @@ return [
     'submitting' => 'Küldés...',
     'select_option' => 'Válassz egy opciót',
     'inbound_help' => [
+        'link_forms' => 'Űrlapok megnyitása',
+        'link_new_form' => 'Új űrlap létrehozása',
+        'link_form_webhook' => ':name – webhook beállításai',
+        'link_submissions' => 'Űrlap beküldések megnyitása',
         'navigation_label' => 'Külső űrlapok bekötése',
         'title' => 'Külső űrlapok bekötése (webhook)',
         'link' => 'Részletes útmutató képekkel',

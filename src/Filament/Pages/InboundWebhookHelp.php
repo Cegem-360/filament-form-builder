@@ -9,6 +9,10 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use InvalidArgumentException;
+use Madbox99\FilamentFormBuilder\Filament\Resources\FormSubmissions\FormSubmissionResource;
+use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\RegistrationFormResource;
+use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
+use Throwable;
 
 /**
  * Admin guide: how to connect an external form (WordPress, Zapier, Make, any
@@ -89,6 +93,58 @@ final class InboundWebhookHelp extends Page
         }
 
         return $guides;
+    }
+
+    /**
+     * Direct links for the setup steps, so nobody has to search the menu:
+     * the forms list, the forms that already accept webhooks, and the
+     * submissions list. Empty when the resources are not in the panel.
+     *
+     * @return array{step1: list<array{label: string, url: string}>, step2: list<array{label: string, url: string}>, step3: list<array{label: string, url: string}>, troubleshooting: list<array{label: string, url: string}>}
+     */
+    public function getSetupLinks(): array
+    {
+        $links = ['step1' => [], 'step2' => [], 'step3' => [], 'troubleshooting' => []];
+
+        try {
+            $formsUrl = RegistrationFormResource::getUrl('index');
+        } catch (Throwable) {
+            return $links;
+        }
+
+        $label = fn (string $key, array $replace = []): string => __("filament-form-builder::form.inbound_help.{$key}", $replace);
+
+        $links['step1'][] = ['label' => $label('link_forms'), 'url' => $formsUrl];
+
+        try {
+            $links['step1'][] = ['label' => $label('link_new_form'), 'url' => RegistrationFormResource::getUrl('create')];
+        } catch (Throwable) {
+        }
+
+        $inboundForms = RegistrationFormResource::getEloquentQuery()
+            ->where('inbound_enabled', true)
+            ->orderBy('name')
+            ->limit(5)
+            ->get();
+
+        foreach ($inboundForms as $form) {
+            /** @var RegistrationForm $form */
+            $link = ['label' => $label('link_form_webhook', ['name' => $form->name]), 'url' => RegistrationFormResource::getUrl('edit', ['record' => $form])];
+            $links['step2'][] = $link;
+            $links['step3'][] = $link;
+        }
+
+        if ($inboundForms->isEmpty()) {
+            $links['step2'][] = ['label' => $label('link_forms'), 'url' => $formsUrl];
+            $links['step3'][] = ['label' => $label('link_forms'), 'url' => $formsUrl];
+        }
+
+        try {
+            $links['troubleshooting'][] = ['label' => $label('link_submissions'), 'url' => FormSubmissionResource::getUrl('index')];
+        } catch (Throwable) {
+        }
+
+        return $links;
     }
 
     /**
