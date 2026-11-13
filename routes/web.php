@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Madbox99\FilamentFormBuilder\Http\Controllers\EmbedScriptController;
 use Madbox99\FilamentFormBuilder\Http\Controllers\InboundSubmissionController;
 use Madbox99\FilamentFormBuilder\Http\Controllers\PublicFormController;
+use Madbox99\FilamentFormBuilder\Http\Controllers\WordPressPluginController;
 use Madbox99\FilamentFormBuilder\Http\Middleware\ExpectsJson;
 
 $middleware = (array) config('filament-form-builder.routes.middleware', ['web']);
@@ -18,6 +19,11 @@ $inboundMiddleware = (array) config('filament-form-builder.routes.inbound_middle
 
 // Inbound webhook: server-to-server POSTs from external forms — no session,
 // no CSRF. Registered first so `/forms/{slug}` never shadows it.
+// The installable WordPress plugin: a static download, no session needed.
+Route::get('forms/wordpress-plugin.zip', WordPressPluginController::class)
+    ->middleware('throttle:'.($throttle['script'] ?? '120,1'))
+    ->name('form-builder.wordpress-plugin');
+
 Route::middleware($inboundMiddleware)->group(function () use ($inboundPath): void {
     Route::post($inboundPath, InboundSubmissionController::class)
         ->middleware(ExpectsJson::class)

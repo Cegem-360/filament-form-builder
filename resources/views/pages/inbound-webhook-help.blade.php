@@ -9,6 +9,20 @@
             </div>
         </x-filament::section>
 
+        <x-filament::section :heading="$t('wp_heading')" icon="heroicon-o-puzzle-piece">
+            <p class="ffb-help-text">{{ $t('wp_body') }}</p>
+            <div class="ffb-help-links">
+                <x-filament::button tag="a" :href="$this->getWordPressPluginUrl()" icon="heroicon-m-arrow-down-tray">
+                    {{ $t('wp_download') }}
+                </x-filament::button>
+            </div>
+            <ol class="ffb-help-list">
+                @foreach (__('filament-form-builder::form.inbound_help.wp_steps') as $stepText)
+                    <li>{{ $stepText }}</li>
+                @endforeach
+            </ol>
+        </x-filament::section>
+
         <x-filament::section :heading="$t('setup_heading')">
             <div class="ffb-help-steps">
                 @foreach ([['step1', '01-enable', 'screenshot_enable'], ['step2', null, null], ['step3', '02-mapping', 'screenshot_mapping']] as [$step, $image, $caption])

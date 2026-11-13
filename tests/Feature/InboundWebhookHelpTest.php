@@ -48,3 +48,7 @@ it('only serves whitelisted help images', function (): void {
 it('builds no setup links without a Filament panel', function (): void {
     expect((new InboundWebhookHelp)->getSetupLinks())->toBe(['step1' => [], 'step2' => [], 'step3' => [], 'troubleshooting' => []]);
 });
+
+it('links the WordPress plugin download', function (): void {
+    expect((new InboundWebhookHelp)->getWordPressPluginUrl())->toBe(route('form-builder.wordpress-plugin'));
+});

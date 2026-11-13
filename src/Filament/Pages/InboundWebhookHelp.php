@@ -39,6 +39,11 @@ final class InboundWebhookHelp extends Page
         return __('filament-form-builder::form.inbound_help.title');
     }
 
+    public function getWordPressPluginUrl(): string
+    {
+        return route('form-builder.wordpress-plugin');
+    }
+
     public function getExamplePayloadJson(): string
     {
         return (string) json_encode(
