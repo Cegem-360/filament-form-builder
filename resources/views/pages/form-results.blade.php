@@ -15,6 +15,7 @@
         <div class="ffb-results-toolbar">
             <div class="ffb-results-presets" role="group">
                 @foreach (['7' => $t('range_7'), '30' => $t('range_30'), '90' => $t('range_90'), 'all' => $t('range_all')] as $key => $label)
+                    @php($key = (string) $key)
                     <x-filament::button
                         size="sm"
                         :color="$range === $key ? 'primary' : 'gray'"

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.1] - 2026-11-17
+
+### Fixed
+- Results page: clicking the 7/30/90-day buttons threw a TypeError (numeric array keys became ints).
+
 ## [0.9.0] - 2026-11-17
 
 ### Changed
