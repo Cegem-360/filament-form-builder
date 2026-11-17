@@ -244,3 +244,29 @@ it('stores an empty optional rating as null', function (): void {
 
     expect(FormSubmission::query()->sole()->data['score'])->toBeNull();
 });
+
+it('keeps numeric field keys when unmapped values are stored too', function (): void {
+    $form = inboundForm([
+        'fields' => [
+            ['type' => 'text_input', 'data' => ['name' => '1', 'label' => 'Név', 'required' => true]],
+            ['type' => 'email', 'data' => ['name' => '2', 'label' => 'Email', 'required' => true]],
+            ['type' => 'text_input', 'data' => ['name' => '5', 'label' => 'Tárgy']],
+        ],
+        'inbound_field_map' => [
+            ['external' => 'your-name', 'field' => '1'],
+            ['external' => 'your-email', 'field' => '2'],
+            ['external' => 'your-subject', 'field' => '5'],
+        ],
+    ]);
+
+    $this->postJson($form->getInboundUrl(), ['your-name' => 'Anna', 'your-email' => 'anna@example.com', 'your-subject' => 'Hello', 'wp_form' => 'CF7'])
+        ->assertCreated();
+
+    $data = FormSubmission::query()->sole()->data;
+
+    expect($data['1'])->toBe('Anna')
+        ->and($data['2'])->toBe('anna@example.com')
+        ->and($data['5'])->toBe('Hello')
+        ->and($data)->not->toHaveKey('0')
+        ->and($data['_unmapped'])->toBe(['wp_form' => 'CF7']);
+});

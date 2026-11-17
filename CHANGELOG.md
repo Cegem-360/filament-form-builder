@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.2] - 2026-11-17
+
+### Fixed
+- Inbound submissions with extra (unmapped) values renumbered numeric field keys ("1", "2"… became "0", "1"…),
+  so answers were stored under the wrong field. Field keys are now kept as they are.
+
 ## [0.7.1] - 2026-11-17
 
 ### Fixed
