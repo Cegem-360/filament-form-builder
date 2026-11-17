@@ -26,7 +26,8 @@ final readonly class SubmitRegistrationForm
      */
     public function handle(RegistrationForm $form, array $formData, array $unmappedData = [], string $channel = 'form'): ?FormSubmission
     {
-        $storedData = $unmappedData === [] ? $formData : [...$formData, '_unmapped' => $unmappedData];
+        // `+`, not a spread: field keys may be numeric strings ("1", "2"…), which a spread would renumber.
+        $storedData = $unmappedData === [] ? $formData : $formData + ['_unmapped' => $unmappedData];
 
         $submission = DB::transaction(function () use ($form, $storedData): ?FormSubmission {
             $submission = $this->processor->handle($form, $storedData);
