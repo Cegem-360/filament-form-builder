@@ -56,8 +56,8 @@
                             @foreach ($field->distribution as $answer => $count)
                                 <div class="ffb-results-bar" role="listitem">
                                     <span class="ffb-results-bar-label">{{ $answer }}</span>
-                                    <span class="ffb-results-bar-track">
-                                        <span class="ffb-results-bar-fill" style="width: {{ round($count / $peak * 100, 1) }}%"></span>
+                                    <span class="ffb-results-bar-track" style="display: block; height: .75rem; overflow: hidden;">
+                                        <span class="ffb-results-bar-fill" style="display: block; height: 100%; width: {{ round($count / $peak * 100, 1) }}%; background: var(--primary-500, #3b82f6);"></span>
                                     </span>
                                     <span class="ffb-results-bar-count">
                                         {{ $count }}

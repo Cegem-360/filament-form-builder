@@ -59,12 +59,12 @@ final class SubmissionCsvExport
 
         $columns = $form instanceof RegistrationForm ? SubmissionExportRow::columns($form) : [];
 
-        fputcsv($handle, [
+        self::putRow($handle, [
             __('filament-form-builder::form.fields.form'),
             __('filament-form-builder::form.fields.submitted_at'),
             __('filament-form-builder::form.fields.lead'),
             ...($form instanceof RegistrationForm ? array_values($columns) : [__('filament-form-builder::form.export.answers')]),
-        ], self::SEPARATOR, escape: '');
+        ]);
 
         $submissions->clone()->reorder()->with('registrationForm')->chunkById(500, function ($chunk) use ($handle, $form, $columns): void {
             foreach ($chunk as $submission) {
@@ -81,8 +81,27 @@ final class SubmissionCsvExport
                     $cells = [SubmissionExportRow::summary($submission)];
                 }
 
-                fputcsv($handle, [...$leading, ...$cells], self::SEPARATOR, escape: '');
+                self::putRow($handle, [...$leading, ...$cells]);
             }
         });
+    }
+
+    /**
+     * @param  resource  $handle
+     * @param  list<string>  $cells
+     */
+    private static function putRow($handle, array $cells): void
+    {
+        fputcsv($handle, array_map(self::neutralise(...), $cells), self::SEPARATOR, escape: '');
+    }
+
+    /**
+     * Spreadsheets run a cell starting with = + - @ (or a tab / CR) as a
+     * formula: a submitted "=HYPERLINK(…)" becomes a live link and a phone
+     * number "+36 …" gets mangled. A leading apostrophe keeps it plain text.
+     */
+    private static function neutralise(string $cell): string
+    {
+        return $cell !== '' && in_array($cell[0], ['=', '+', '-', '@', "\t", "\r"], true) ? "'".$cell : $cell;
     }
 }

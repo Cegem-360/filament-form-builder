@@ -68,3 +68,17 @@ it('streams the answers as one text column when no form is chosen', function ():
     expect(str_getcsv($lines[0], ';'))->toBe(['Form', 'Submitted At', 'Lead', 'Answers'])
         ->and(str_getcsv($lines[1], ';')[3])->toBe('Name: Anna | Consent: No');
 });
+
+it('neutralises cells that a spreadsheet would read as a formula', function (): void {
+    $form = RegistrationForm::factory()->create(['name' => '=Form', 'fields' => [
+        ['type' => FormFieldBlueprint::TYPE_TEXT, 'data' => ['name' => 'phone', 'label' => '+Phone']],
+        ['type' => FormFieldBlueprint::TYPE_TEXT, 'data' => ['name' => 'note', 'label' => 'Note']],
+    ]]);
+    FormSubmission::factory()->for($form)->create(['data' => ['phone' => '+36 30 123 4567', 'note' => '=HYPERLINK("https://evil.example")']]);
+
+    $lines = explode("\n", trim(substr(SubmissionCsvExport::contents($form->submissions()->getQuery(), $form), 3)));
+
+    expect(str_getcsv($lines[0], ';')[3])->toBe("'+Phone")
+        ->and(str_getcsv($lines[1], ';')[0])->toBe("'=Form")
+        ->and(array_slice(str_getcsv($lines[1], ';'), 3))->toBe(["'+36 30 123 4567", "'=HYPERLINK(\"https://evil.example\")"]);
+});

@@ -8,8 +8,10 @@ Drop a `<script>` tag into any HTML page (WordPress, static site, SPA) and colle
 
 - Filament v5 resources for forms + submissions
 - Livewire-powered public form renderer (full page, iframe-friendly embed, or one-liner JS widget)
-- Repeater-based field builder in the admin (text, email, phone, number, textarea, select, checkbox, date)
+- Repeater-based field builder in the admin (text, email, phone, number, textarea, select, radio, checkbox, checkbox list, date, rating 0–10 / 1–10)
 - Per-form submission actions (save to DB, auto-create lead, notify email addresses)
+- Submission list filters (form, date range, linked lead) and CSV export with one column per field
+- Per-form results page: answer distribution, averages and NPS for 0–10 ratings
 - Inbound webhook: accept submissions from external forms (WordPress, Zapier, any HTTP client) with field mapping
 - `FormSubmissionProcessed` event for app-specific side effects (Lead creation, CRM push, Slack notification...)
 - Pluggable multi-tenancy — any Eloquent model with a slug column works
