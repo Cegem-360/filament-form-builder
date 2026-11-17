@@ -114,6 +114,11 @@ return [
         'yes' => 'Yes',
         'no' => 'No',
     ],
+    'filters' => [
+        'from' => 'From',
+        'until' => 'Until',
+        'has_lead' => 'Has lead',
+    ],
     'export' => [
         'answers' => 'Answers',
         'action' => 'Export (CSV)',

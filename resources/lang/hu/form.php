@@ -114,6 +114,11 @@ return [
         'yes' => 'Igen',
         'no' => 'Nem',
     ],
+    'filters' => [
+        'from' => 'Ettől',
+        'until' => 'Eddig',
+        'has_lead' => 'Van hozzá lead',
+    ],
     'export' => [
         'answers' => 'Válaszok',
         'action' => 'Exportálás (CSV)',
