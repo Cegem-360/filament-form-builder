@@ -122,9 +122,10 @@ class FormResults extends Page
             return 'all';
         }
 
+        // Numeric-string array keys become ints in PHP, hence the cast.
         foreach (['7' => 7, '30' => 30, '90' => 90] as $key => $days) {
             if ($this->from === now()->subDays($days - 1)->toDateString()) {
-                return $key;
+                return (string) $key;
             }
         }
 
