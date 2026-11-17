@@ -48,7 +48,8 @@ final class RegistrationFormsTable
                     ->label(__('filament-form-builder::form.results.navigation_label'))
                     ->icon(Heroicon::OutlinedChartBar)
                     ->color('gray')
-                    ->url(fn (RegistrationForm $record): string => RegistrationFormResource::getUrl('results', ['record' => $record])),
+                    ->url(fn (RegistrationForm $record): string => RegistrationFormResource::getUrl('results', ['record' => $record]))
+                    ->visible(fn (RegistrationForm $record): bool => RegistrationFormResource::canEdit($record)),
                 Action::make('preview')
                     ->label(__('filament-form-builder::form.actions.preview'))
                     ->icon(Heroicon::Eye)

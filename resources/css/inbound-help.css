@@ -70,3 +70,5 @@ ul.ffb-help-list { list-style: disc; }
 .dark .ffb-results-filter, .dark .ffb-results-bar-label, .dark .ffb-results-pill { color: rgb(209 213 219); }
 .dark .ffb-results-nps-score, .dark .ffb-results-pill, .dark .ffb-results-bar-track { background: rgb(55 65 81); }
 .dark .ffb-results-nps-value, .dark .ffb-results-numbers dd, .dark .ffb-results-bar-count { color: rgb(243 244 246); }
+.dark .ffb-results-pill--good { background: rgb(20 83 45); color: rgb(187 247 208); }
+.dark .ffb-results-pill--bad { background: rgb(127 29 29); color: rgb(254 202 202); }

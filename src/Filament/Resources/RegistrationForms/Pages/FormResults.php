@@ -69,6 +69,11 @@ class FormResults extends Page
         return SubmissionStatistics::forForm($this->getRecord(), $this->submissionsQuery());
     }
 
+    public function getSubmissionTotal(): int
+    {
+        return SubmissionStatistics::total($this->submissionsQuery());
+    }
+
     /**
      * @return Builder<FormSubmission>
      */

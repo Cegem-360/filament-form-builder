@@ -1,6 +1,6 @@
 @php($t = fn (string $key, array $replace = []) => __('filament-form-builder::form.results.'.$key, $replace))
 @php($statistics = $this->getStatistics())
-@php($total = $statistics[0]->total ?? 0)
+@php($total = $this->getSubmissionTotal())
 <x-filament-panels::page>
     <div class="ffb-results">
         <x-filament::section>

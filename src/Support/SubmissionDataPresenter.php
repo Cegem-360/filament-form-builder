@@ -18,14 +18,15 @@ final class SubmissionDataPresenter
      * Rows follow the form's field order; payload keys that are not (or no
      * longer) defined on the form are appended with their raw key as label.
      *
+     * @param  list<FormFieldBlueprint>|null  $blueprints  pass the form's blueprints when presenting many rows of one form
      * @return list<SubmissionRow>
      */
-    public static function rows(FormSubmission $submission): array
+    public static function rows(FormSubmission $submission, ?array $blueprints = null): array
     {
         /** @var array<string, mixed> $data */
         $data = is_array($submission->data) ? $submission->data : [];
 
-        $blueprints = $submission->registrationForm !== null
+        $blueprints ??= $submission->registrationForm !== null
             ? FormFieldBlueprint::fromForm($submission->registrationForm)
             : [];
 

@@ -14,12 +14,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Exporter: that needs the exports/notifications tables and a queue worker in
  * every host app, which most apps using this package do not have.
  *
- * Excel-friendly: UTF-8 BOM and ";" as separator. With a form chosen, every
+ * Excel-friendly: UTF-8 BOM, and the list separator Excel expects for the
+ * app locale (";" for hu, "," for en). With a form chosen, every
  * field gets its own column; across forms the answers go into one column.
  */
 final class SubmissionCsvExport
 {
-    private const string SEPARATOR = ';';
+    /** Locales whose Excel uses a decimal comma and therefore ";" as list separator. */
+    private const array SEMICOLON_LOCALES = ['hu', 'de', 'fr', 'it', 'es', 'pt', 'nl', 'pl', 'cs', 'sk', 'ro', 'hr', 'sl', 'ru', 'uk', 'tr', 'da', 'sv', 'nb', 'fi'];
 
     /**
      * @param  Builder<FormSubmission>  $submissions
@@ -57,16 +59,22 @@ final class SubmissionCsvExport
     {
         fwrite($handle, "\xEF\xBB\xBF");
 
-        $columns = $form instanceof RegistrationForm ? SubmissionExportRow::columns($form) : [];
+        $separator = self::separator();
+        $blueprints = $form instanceof RegistrationForm ? FormFieldBlueprint::fromForm($form) : null;
+        $columns = $form instanceof RegistrationForm ? [...SubmissionExportRow::columns($form), ...self::extraKeys($submissions, $form)] : [];
 
-        self::putRow($handle, [
+        self::putRow($handle, $separator, [
             __('filament-form-builder::form.fields.form'),
             __('filament-form-builder::form.fields.submitted_at'),
             __('filament-form-builder::form.fields.lead'),
             ...($form instanceof RegistrationForm ? array_values($columns) : [__('filament-form-builder::form.export.answers')]),
         ]);
 
-        $submissions->clone()->reorder()->with('registrationForm')->chunkById(500, function ($chunk) use ($handle, $form, $columns): void {
+        /** @var array<int|string, list<FormFieldBlueprint>> $blueprintsByForm */
+        $blueprintsByForm = [];
+
+        $submissions->clone()->reorder()->with('registrationForm')->chunkById(500, function ($chunk) use ($handle, $form, $columns, $blueprints, $separator, &$blueprintsByForm): void {
+
             foreach ($chunk as $submission) {
                 $leading = [
                     (string) $submission->registrationForm?->name,
@@ -75,13 +83,16 @@ final class SubmissionCsvExport
                 ];
 
                 if ($form instanceof RegistrationForm) {
-                    $values = SubmissionExportRow::values($submission);
+                    $values = SubmissionExportRow::values($submission, $blueprints);
                     $cells = array_map(static fn (string $key): string => $values[$key] ?? '', array_keys($columns));
                 } else {
-                    $cells = [SubmissionExportRow::summary($submission)];
+                    $formBlueprints = $submission->registrationForm !== null
+                        ? ($blueprintsByForm[$submission->registrationForm->getKey()] ??= FormFieldBlueprint::fromForm($submission->registrationForm))
+                        : [];
+                    $cells = [SubmissionExportRow::summary($submission, $formBlueprints)];
                 }
 
-                self::putRow($handle, [...$leading, ...$cells]);
+                self::putRow($handle, $separator, [...$leading, ...$cells]);
             }
         });
     }
@@ -90,9 +101,49 @@ final class SubmissionCsvExport
      * @param  resource  $handle
      * @param  list<string>  $cells
      */
-    private static function putRow($handle, array $cells): void
+    private static function putRow($handle, string $separator, array $cells): void
     {
-        fputcsv($handle, array_map(self::neutralise(...), $cells), self::SEPARATOR, escape: '');
+        fputcsv($handle, array_map(self::neutralise(...), $cells), $separator, escape: '');
+    }
+
+    private static function separator(): string
+    {
+        $configured = config('filament-form-builder.export.csv_separator');
+
+        if (is_string($configured) && $configured !== '') {
+            return $configured;
+        }
+
+        $language = strtolower(substr(app()->getLocale(), 0, 2));
+
+        return in_array($language, self::SEMICOLON_LOCALES, true) ? ';' : ',';
+    }
+
+    /**
+     * Answer keys stored on submissions but no longer defined on the form
+     * (field removed or renamed), so the export does not silently drop them.
+     *
+     * @param  Builder<FormSubmission>  $submissions
+     * @return array<string, string> key ⇒ key (used as its own column label)
+     */
+    private static function extraKeys(Builder $submissions, RegistrationForm $form): array
+    {
+        $known = SubmissionExportRow::columns($form);
+        $extra = [];
+
+        $submissions->clone()->reorder()->setEagerLoads([])->select(['id', 'data'])->chunkById(500, function ($chunk) use ($known, &$extra): void {
+            foreach ($chunk as $submission) {
+                foreach (array_keys(is_array($submission->data) ? $submission->data : []) as $key) {
+                    $key = (string) $key;
+
+                    if (! isset($known[$key]) && $key !== '_unmapped') {
+                        $extra[$key] = $key;
+                    }
+                }
+            }
+        });
+
+        return $extra;
     }
 
     /**
