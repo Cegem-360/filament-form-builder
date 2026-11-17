@@ -81,3 +81,5 @@ ul.ffb-help-list { list-style: disc; }
 .ffb-results-text-count { color: rgb(107 114 128); white-space: nowrap; }
 .dark .ffb-results-text-list li { border-top-color: rgb(255 255 255 / .08); }
 .dark .ffb-results-text-label { color: rgb(243 244 246); }
+.ffb-submission-message { padding: 1rem 1.25rem; border-radius: .75rem; background: rgb(249 250 251); border-left: 3px solid var(--primary-500, #6366f1); line-height: 1.6; }
+.dark .ffb-submission-message { background: rgb(255 255 255 / .04); }

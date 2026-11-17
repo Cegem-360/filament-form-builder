@@ -115,6 +115,12 @@ return [
         'no' => 'Nem',
     ],
     'submission_view' => [
+        'title_fallback' => 'Beküldés #:id',
+        'reply' => 'Válasz e-mailben',
+        'contact' => 'Kapcsolat',
+        'no_email' => 'Nincs e-mail cím',
+        'no_phone' => 'Nincs telefonszám',
+        'lead_number_short' => '#',
         'answers' => 'Válaszok',
         'submitter' => 'Beküldő',
         'name' => 'Név',

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0] - 2026-11-17
+
+### Changed
+- Submission page: the title is the submitter (name or e-mail), the subheading the form, time and external form;
+  "Reply by e-mail" and "Open lead" header actions; answers in a wide column (long text as a highlighted message,
+  short answers as a label/value list), contact, origin and technical details in a side column.
+
 ## [0.9.2] - 2026-11-17
 
 ### Changed
