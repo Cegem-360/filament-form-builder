@@ -38,6 +38,13 @@ final readonly class FormFieldBlueprint
 
     public const TYPE_DATE = 'date';
 
+    /** A numbered scale (0–10 or 1–10); a 0–10 scale is reported as NPS. */
+    public const TYPE_RATING = 'rating';
+
+    public const RATING_DEFAULT_MIN = 1;
+
+    public const RATING_DEFAULT_MAX = 10;
+
     public const TYPES = [
         self::TYPE_TEXT,
         self::TYPE_EMAIL,
@@ -49,6 +56,7 @@ final readonly class FormFieldBlueprint
         self::TYPE_CHECKBOX_LIST,
         self::TYPE_RADIO,
         self::TYPE_DATE,
+        self::TYPE_RATING,
     ];
 
     public const WIDTH_FULL = 'full';
@@ -70,6 +78,7 @@ final readonly class FormFieldBlueprint
         self::TYPE_SELECT,
         self::TYPE_RADIO,
         self::TYPE_DATE,
+        self::TYPE_RATING,
     ];
 
     public static function supportsWidthChoice(string $type): bool
@@ -172,6 +181,11 @@ final readonly class FormFieldBlueprint
             }
         }
 
+        if ($type === self::TYPE_RATING) {
+            $min = $min !== null && (int) $min <= 0 ? 0 : self::RATING_DEFAULT_MIN;
+            $max = $max === null ? self::RATING_DEFAULT_MAX : max($min + 1, min(10, (int) $max));
+        }
+
         $width = self::WIDTH_FULL;
         if (self::supportsWidthChoice($type)) {
             $candidate = is_string($data['width'] ?? null) ? $data['width'] : '';
@@ -221,6 +235,7 @@ final readonly class FormFieldBlueprint
                 $this->max !== null ? 'max:'.$this->max : null,
             ])),
             self::TYPE_DATE => [...$rules, 'date'],
+            self::TYPE_RATING => [...$rules, 'integer', 'between:'.$this->min.','.$this->max],
             self::TYPE_TEXTAREA => [...$rules, 'string', 'max:'.($this->maxLength ?? 5000)],
             self::TYPE_CHECKBOX => [...$rules, 'boolean'],
             self::TYPE_SELECT, self::TYPE_RADIO => [
@@ -267,11 +282,33 @@ final readonly class FormFieldBlueprint
         return $rules;
     }
 
+    /**
+     * True for a 0–10 rating, the scale an NPS score is computed from.
+     */
+    public function isNpsScale(): bool
+    {
+        return $this->type === self::TYPE_RATING && $this->min === 0 && $this->max === 10;
+    }
+
+    /**
+     * Brings a validated value to the type it is stored as. Ratings arrive as
+     * strings from radio inputs and external forms but are stored as ints.
+     */
+    public function castValue(mixed $value): mixed
+    {
+        if ($this->type === self::TYPE_RATING && is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return $value;
+    }
+
     public function defaultValue(): mixed
     {
         return match ($this->type) {
             self::TYPE_CHECKBOX => false,
             self::TYPE_CHECKBOX_LIST => [],
+            self::TYPE_RATING => null,
             default => '',
         };
     }

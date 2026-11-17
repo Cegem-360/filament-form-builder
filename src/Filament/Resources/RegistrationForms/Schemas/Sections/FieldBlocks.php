@@ -86,6 +86,26 @@ final class FieldBlocks
                     ...self::commonFields(),
                     self::widthField(),
                 ]),
+
+            self::block(FormFieldBlueprint::TYPE_RATING, Heroicon::Star)
+                ->schema([
+                    ...self::commonFields(),
+                    self::widthField(),
+                    Select::make('min')
+                        ->label(__('filament-form-builder::form.fields.rating_min'))
+                        ->options([0 => '0', 1 => '1'])
+                        ->default(FormFieldBlueprint::RATING_DEFAULT_MIN)
+                        ->helperText(__('filament-form-builder::form.helpers.rating_min'))
+                        ->selectablePlaceholder(false)
+                        ->required(),
+                    TextInput::make('max')
+                        ->label(__('filament-form-builder::form.fields.rating_max'))
+                        ->numeric()
+                        ->minValue(2)
+                        ->maxValue(10)
+                        ->default(FormFieldBlueprint::RATING_DEFAULT_MAX)
+                        ->required(),
+                ]),
         ];
     }
 

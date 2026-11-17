@@ -188,3 +188,40 @@ it('allows half width on radio but not on checkbox_list', function (): void {
     expect(FormFieldBlueprint::supportsWidthChoice(FormFieldBlueprint::TYPE_RADIO))->toBeTrue()
         ->and(FormFieldBlueprint::supportsWidthChoice(FormFieldBlueprint::TYPE_CHECKBOX_LIST))->toBeFalse();
 });
+
+it('gives a rating field a 1..10 scale by default', function (): void {
+    $blueprint = FormFieldBlueprint::fromForm(makeForm([
+        ['type' => FormFieldBlueprint::TYPE_RATING, 'data' => ['name' => 'r', 'label' => 'R']],
+    ]))[0];
+
+    expect($blueprint->min)->toBe(1)
+        ->and($blueprint->max)->toBe(10)
+        ->and($blueprint->validationRules())->toContain('integer', 'between:1,10')
+        ->and($blueprint->isNpsScale())->toBeFalse();
+});
+
+it('treats a 0..10 rating as an NPS scale', function (): void {
+    $blueprint = FormFieldBlueprint::fromForm(makeForm([
+        ['type' => FormFieldBlueprint::TYPE_RATING, 'data' => ['name' => 'r', 'label' => 'R', 'min' => 0, 'max' => 10]],
+    ]))[0];
+
+    expect($blueprint->isNpsScale())->toBeTrue()
+        ->and($blueprint->validationRules())->toContain('between:0,10');
+});
+
+it('clamps the rating scale to 0..10', function (): void {
+    $blueprint = FormFieldBlueprint::fromForm(makeForm([
+        ['type' => FormFieldBlueprint::TYPE_RATING, 'data' => ['name' => 'r', 'label' => 'R', 'min' => -3, 'max' => 15]],
+    ]))[0];
+
+    expect($blueprint->min)->toBe(0)
+        ->and($blueprint->max)->toBe(10);
+});
+
+it('never reports a number field as an NPS scale', function (): void {
+    $blueprint = FormFieldBlueprint::fromForm(makeForm([
+        ['type' => FormFieldBlueprint::TYPE_NUMBER, 'data' => ['name' => 'n', 'label' => 'N', 'min' => 0, 'max' => 10]],
+    ]))[0];
+
+    expect($blueprint->isNpsScale())->toBeFalse();
+});

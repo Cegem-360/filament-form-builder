@@ -29,6 +29,7 @@ return [
         'custom_css' => 'Styles applied to this form only. Rules are automatically scoped to the form container, so they cannot affect anything outside of the embedded widget.',
     ],
     'helpers' => [
+        'rating_min' => 'A 0–10 scale also shows NPS in the results.',
         'inbound_url' => 'Paste this secret address into the webhook setting of the external form (method: POST). Anyone who knows it can submit, so keep it private.',
         'inbound_save_first' => 'Save the form to get the webhook URL.',
         'inbound_regenerate' => 'The current URL stops working immediately. Every external form must be updated with the new URL.',
@@ -85,6 +86,8 @@ return [
         'placeholder' => 'Placeholder',
         'max_length' => 'Max length',
         'min' => 'Min',
+        'rating_min' => 'Scale start',
+        'rating_max' => 'Scale end',
         'max' => 'Max',
         'options' => 'Options',
         'option_label' => 'Option label',
@@ -121,6 +124,7 @@ return [
         'checkbox' => 'Checkbox',
         'checkbox_list' => 'Checkbox list',
         'radio' => 'Radio buttons',
+        'rating' => 'Rating (scale)',
         'date' => 'Date',
     ],
     'actions' => [

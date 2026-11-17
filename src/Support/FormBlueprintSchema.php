@@ -69,6 +69,17 @@ final class FormBlueprintSchema
             FormFieldBlueprint::TYPE_CHECKBOX_LIST => $withOptions(FormFieldBlueprint::TYPE_CHECKBOX_LIST, 'Interests', 'interests'),
             FormFieldBlueprint::TYPE_RADIO => $withOptions(FormFieldBlueprint::TYPE_RADIO, 'Gender', 'gender'),
             FormFieldBlueprint::TYPE_DATE => $simple(FormFieldBlueprint::TYPE_DATE, 'Birthday', 'birthday'),
+            FormFieldBlueprint::TYPE_RATING => [
+                'type' => FormFieldBlueprint::TYPE_RATING,
+                'data' => [
+                    'label' => 'How likely are you to recommend us?',
+                    'name' => 'recommend',
+                    'required' => false,
+                    'width' => FormFieldBlueprint::WIDTH_FULL,
+                    'min' => 0,
+                    'max' => 10,
+                ],
+            ],
         ];
     }
 

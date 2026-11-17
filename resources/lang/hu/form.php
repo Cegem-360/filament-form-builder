@@ -29,6 +29,7 @@ return [
         'custom_css' => 'Csak erre az űrlapra érvényes stílusok. A szabályok automatikusan az űrlap-konténerre szűkülnek, így nem befolyásolják az iframe-en kívüli oldalt.',
     ],
     'helpers' => [
+        'rating_min' => '0–10-es skálánál az eredmények NPS-t is mutatnak.',
         'inbound_url' => 'Ezt a titkos címet másold be a külső űrlap webhook-beállításába (metódus: POST). Aki ismeri, tud rá küldeni, ezért ne tedd közzé.',
         'inbound_save_first' => 'Mentsd el az űrlapot, és megkapod a webhook címet.',
         'inbound_regenerate' => 'A mostani cím azonnal megszűnik. Minden külső űrlapban át kell írni az újra.',
@@ -85,6 +86,8 @@ return [
         'placeholder' => 'Placeholder',
         'max_length' => 'Max. hossz',
         'min' => 'Min.',
+        'rating_min' => 'Skála kezdete',
+        'rating_max' => 'Skála vége',
         'max' => 'Max.',
         'options' => 'Opciók',
         'option_label' => 'Opció címke',
@@ -121,6 +124,7 @@ return [
         'checkbox' => 'Pipa',
         'checkbox_list' => 'Több választós (checkbox)',
         'radio' => 'Rádió',
+        'rating' => 'Értékelés (skála)',
         'date' => 'Dátum',
     ],
     'actions' => [

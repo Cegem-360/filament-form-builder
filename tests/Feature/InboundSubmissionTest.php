@@ -214,3 +214,22 @@ it('still requires a required consent checkbox', function (): void {
         ->assertJsonValidationErrors(['consent']);
     $this->post($form->getInboundUrl(), ['email' => 'anna@example.com', 'consent' => 'on'])->assertCreated();
 });
+
+it('stores a numeric-string rating as an integer', function (): void {
+    $form = inboundForm(['fields' => [
+        ['type' => 'email', 'data' => ['name' => 'email', 'label' => 'Email', 'required' => true]],
+        ['type' => 'rating', 'data' => ['name' => 'score', 'label' => 'Score', 'min' => 0, 'max' => 10]],
+    ]]);
+
+    $this->postJson($form->getInboundUrl(), ['email' => 'anna@example.com', 'score' => '8'])->assertCreated();
+
+    expect(FormSubmission::query()->sole()->data['score'])->toBe(8);
+});
+
+it('rejects a rating outside the scale', function (): void {
+    $form = inboundForm(['fields' => [
+        ['type' => 'rating', 'data' => ['name' => 'score', 'label' => 'Score', 'min' => 0, 'max' => 10]],
+    ]]);
+
+    $this->postJson($form->getInboundUrl(), ['score' => '11'])->assertUnprocessable();
+});

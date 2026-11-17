@@ -36,6 +36,13 @@
     .ffb-scope .ffb-radio-group, .ffb-scope .ffb-checkbox-group { display: flex; flex-direction: column; gap: 0.5rem; }
     .ffb-scope .ffb-option { display: inline-flex; align-items: flex-start; gap: 0.625rem; cursor: pointer; user-select: none; }
     .ffb-scope .ffb-radio { margin-top: 0.125rem; width: 1rem; height: 1rem; accent-color: var(--ffb-primary, #1c64f2); cursor: pointer; }
+    .ffb-scope .ffb-rating { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+    .ffb-scope .ffb-rating-option { position: relative; cursor: pointer; }
+    .ffb-scope .ffb-rating-input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .ffb-scope .ffb-rating-label { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2.5rem; padding: 0 0.5rem; border: 1px solid #d1d5db; border-radius: var(--ffb-radius, 0.5rem); background: #f9fafb; font-size: 0.875rem; font-weight: 500; color: #111827; transition: background 120ms ease, border-color 120ms ease; }
+    .ffb-scope .ffb-rating-option:hover .ffb-rating-label { border-color: var(--ffb-primary, #1c64f2); }
+    .ffb-scope .ffb-rating-input:checked + .ffb-rating-label { background: var(--ffb-primary, #1c64f2); border-color: var(--ffb-primary, #1c64f2); color: #ffffff; }
+    .ffb-scope .ffb-rating-input:focus-visible + .ffb-rating-label { box-shadow: 0 0 0 3px var(--ffb-primary-ring, rgba(164, 202, 254, 0.6)); }
     .ffb-scope .ffb-option-label { font-size: 0.875rem; line-height: 1.25; color: #111827; }
 
     .ffb-scope .ffb-submit { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; color: #ffffff; background: var(--ffb-primary, #1a56db); border: 1px solid transparent; border-radius: var(--ffb-radius, 0.5rem); cursor: pointer; transition: background 120ms ease, box-shadow 120ms ease; }
