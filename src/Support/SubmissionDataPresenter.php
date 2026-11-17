@@ -128,6 +128,23 @@ final class SubmissionDataPresenter
     }
 
     /**
+     * Keys of the fields that hold the submitter's name, e-mail and phone, in
+     * form field order.
+     *
+     * @param  list<FormFieldBlueprint>  $blueprints
+     * @return list<string>
+     */
+    public static function contactKeys(array $blueprints): array
+    {
+        $keys = array_filter(self::contactFields($blueprints));
+
+        return array_values(array_filter(
+            array_map(static fn (FormFieldBlueprint $blueprint): string => $blueprint->key, $blueprints),
+            static fn (string $key): bool => in_array($key, $keys, true),
+        ));
+    }
+
+    /**
      * @return list<FormFieldBlueprint>
      */
     private static function blueprintsOf(FormSubmission $submission): array

@@ -129,6 +129,8 @@ return [
         'lead_number' => 'Lead #:id',
     ],
     'results' => [
+        'text_answers_heading' => 'Szöveges válaszok',
+        'text_answers_description' => 'A szöveges válaszok a beküldések listájában olvashatók.',
         'range_7' => 'Utolsó 7 nap',
         'range_30' => 'Utolsó 30 nap',
         'range_90' => 'Utolsó 90 nap',
