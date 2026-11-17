@@ -6,6 +6,8 @@ namespace Madbox99\FilamentFormBuilder\Filament\Resources\FormSubmissions\Tables
 
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
@@ -15,6 +17,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
+use Madbox99\FilamentFormBuilder\Support\SubmissionDataPresenter;
+use Madbox99\FilamentFormBuilder\Support\SubmissionLinks;
 
 final class FormSubmissionsTable
 {
@@ -22,28 +26,45 @@ final class FormSubmissionsTable
     {
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with([
-                'registrationForm:id,name',
+                'registrationForm:id,name,fields',
             ]))
             ->columns([
+                TextColumn::make('created_at')
+                    ->label(__('filament-form-builder::form.fields.submitted_at'))
+                    ->since()
+                    ->dateTimeTooltip()
+                    ->description(fn (FormSubmission $record): string => (string) $record->created_at?->translatedFormat('Y. M j. H:i'))
+                    ->sortable(),
+                TextColumn::make('submitter')
+                    ->label(__('filament-form-builder::form.submission_view.submitter'))
+                    ->state(fn (FormSubmission $record): string => self::contact($record)['name'] ?? self::contact($record)['email'] ?? '—')
+                    ->weight(FontWeight::Medium)
+                    ->description(fn (FormSubmission $record): ?string => self::contactLine($record))
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('data', 'like', '%'.str_replace(['%', '_'], ['\\%', '\\_'], $search).'%')),
+                TextColumn::make('answers')
+                    ->label(__('filament-form-builder::form.submission_view.answers'))
+                    ->state(fn (FormSubmission $record): string => SubmissionDataPresenter::answerSummary($record))
+                    ->limit(110)
+                    ->tooltip(fn (FormSubmission $record): ?string => Str::length(SubmissionDataPresenter::answerSummary($record)) > 110 ? SubmissionDataPresenter::answerSummary($record) : null)
+                    ->wrap()
+                    ->placeholder('—'),
                 TextColumn::make('registrationForm.name')
                     ->label(__('filament-form-builder::form.fields.form'))
                     ->badge()
+                    ->description(fn (FormSubmission $record): ?string => SubmissionDataPresenter::origin($record)['form'] ?? null)
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('data_preview')
-                    ->label(__('filament-form-builder::form.fields.data'))
-                    ->state(fn (FormSubmission $record): string => self::buildDataPreview($record))
-                    ->tooltip(fn (FormSubmission $record): string => self::buildDataPreview($record, null)),
                 TextColumn::make('lead_id')
                     ->label(__('filament-form-builder::form.fields.lead'))
+                    ->formatStateUsing(fn (int|string $state): string => __('filament-form-builder::form.submission_view.lead_number', ['id' => $state]))
+                    ->url(fn (FormSubmission $record): ?string => SubmissionLinks::leadUrl($record->lead_id))
+                    ->color(fn (FormSubmission $record): ?string => SubmissionLinks::leadUrl($record->lead_id) !== null ? 'primary' : null)
+                    ->icon(fn (FormSubmission $record): ?Heroicon => SubmissionLinks::leadUrl($record->lead_id) !== null ? Heroicon::OutlinedArrowTopRightOnSquare : null)
+                    ->iconPosition('after')
                     ->placeholder('—'),
                 TextColumn::make('ip_address')
                     ->label(__('filament-form-builder::form.fields.ip_address'))
-                    ->toggleable(),
-                TextColumn::make('created_at')
-                    ->label(__('filament-form-builder::form.fields.submitted_at'))
-                    ->dateTime()
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -86,26 +107,19 @@ final class FormSubmissionsTable
             ->toolbarActions([]);
     }
 
-    private static function buildDataPreview(FormSubmission $record, ?int $limit = 80): string
+    /**
+     * @return array{name: string|null, email: string|null, phone: string|null}
+     */
+    private static function contact(FormSubmission $record): array
     {
-        $data = $record->data ?? [];
+        return SubmissionDataPresenter::contact($record);
+    }
 
-        $parts = [];
+    private static function contactLine(FormSubmission $record): ?string
+    {
+        $contact = self::contact($record);
+        $parts = array_filter([$contact['name'] !== null ? $contact['email'] : null, $contact['phone']]);
 
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $value = implode(', ', $value);
-            }
-
-            if (is_bool($value)) {
-                $value = $value ? 'true' : 'false';
-            }
-
-            $parts[] = sprintf('%s=%s', $key, (string) $value);
-        }
-
-        $preview = implode(' | ', $parts);
-
-        return $limit !== null ? Str::limit($preview, $limit) : $preview;
+        return $parts === [] ? null : implode(' · ', $parts);
     }
 }

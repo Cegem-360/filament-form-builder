@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0] - 2026-11-17
+
+### Changed
+- Submission list: submitted time (relative + date), **Submitter** (name, e-mail · phone, found by field type and
+  name-like keys/labels, so numeric field keys work), **Answers** with field labels, form badge with the external
+  form name, lead as a link. Searching looks inside the answers too. IP is hidden by default.
+- Submission page: Submitter section (mailto/tel links, copyable, "Open lead" button), Answers (multi-line text
+  keeps its line breaks), **Where it came from** (WordPress form, page link, extra values) instead of the raw
+  `_unmapped` JSON, and collapsed Technical details.
+
+### Added
+- `SubmissionLinks::leadUrlUsing(fn (int|string $leadId): ?string => …)` — lets the host app turn the lead id into
+  a link.
+- `SubmissionDataPresenter::contact()`, `answerRows()`, `answerSummary()`, `origin()`.
+
 ## [0.7.2] - 2026-11-17
 
 ### Fixed
