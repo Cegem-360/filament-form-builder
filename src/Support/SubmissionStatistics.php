@@ -43,7 +43,7 @@ final class SubmissionStatistics
 
         $total = 0;
 
-        $submissions->clone()->select(['id', 'data'])->chunkById(500, function ($chunk) use ($blueprints, &$tally, &$total): void {
+        $submissions->clone()->reorder()->select(['id', 'data'])->chunkById(500, function ($chunk) use ($blueprints, &$tally, &$total): void {
             foreach ($chunk as $submission) {
                 $total++;
                 $data = is_array($submission->data) ? $submission->data : [];

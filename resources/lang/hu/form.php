@@ -114,6 +114,10 @@ return [
         'yes' => 'Igen',
         'no' => 'Nem',
     ],
+    'export' => [
+        'answers' => 'Válaszok',
+        'action' => 'Exportálás (CSV)',
+    ],
     'field_types' => [
         'text_input' => 'Szöveg',
         'email' => 'Email',

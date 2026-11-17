@@ -114,6 +114,10 @@ return [
         'yes' => 'Yes',
         'no' => 'No',
     ],
+    'export' => [
+        'answers' => 'Answers',
+        'action' => 'Export (CSV)',
+    ],
     'field_types' => [
         'text_input' => 'Text',
         'email' => 'Email',
