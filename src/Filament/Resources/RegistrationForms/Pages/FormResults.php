@@ -15,6 +15,7 @@ use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Registrati
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Madbox99\FilamentFormBuilder\Support\FormFieldBlueprint;
+use Madbox99\FilamentFormBuilder\Support\SubmissionDataPresenter;
 use Madbox99\FilamentFormBuilder\Support\SubmissionStatistics;
 use Madbox99\FilamentFormBuilder\ValueObjects\FieldStatistics;
 use Override;
@@ -63,11 +64,19 @@ class FormResults extends Page
     }
 
     /**
+     * Every field except the submitter's name, e-mail and phone: those are
+     * contact details, not answers worth charting.
+     *
      * @return list<FieldStatistics>
      */
     public function getStatistics(): array
     {
-        return SubmissionStatistics::forForm($this->getRecord(), $this->submissionsQuery());
+        $contactKeys = SubmissionDataPresenter::contactKeys(FormFieldBlueprint::fromForm($this->getRecord()));
+
+        return array_values(array_filter(
+            SubmissionStatistics::forForm($this->getRecord(), $this->submissionsQuery()),
+            static fn (FieldStatistics $field): bool => ! in_array($field->key, $contactKeys, true),
+        ));
     }
 
     /**
@@ -89,6 +98,8 @@ class FormResults extends Page
     {
         $ratings = array_values(array_filter($statistics, static fn (FieldStatistics $field): bool => $field->type === FormFieldBlueprint::TYPE_RATING && $field->average !== null));
         $nps = array_values(array_filter($ratings, static fn (FieldStatistics $field): bool => $field->nps !== null));
+        // The NPS question already has its own card; the average comes from another rating.
+        $ratings = array_values(array_filter($ratings, static fn (FieldStatistics $field): bool => $field->nps === null));
         $withTotal = array_filter($statistics, static fn (FieldStatistics $field): bool => $field->total > 0);
 
         return [

@@ -129,6 +129,8 @@ return [
         'lead_number' => 'Lead #:id',
     ],
     'results' => [
+        'text_answers_heading' => 'Text answers',
+        'text_answers_description' => 'Read the text answers in the submission list.',
         'range_7' => 'Last 7 days',
         'range_30' => 'Last 30 days',
         'range_90' => 'Last 90 days',

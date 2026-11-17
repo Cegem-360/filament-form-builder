@@ -87,8 +87,10 @@
                 ], key('ffb-timeline-'.$filterKey))
             @endif
 
+            @php($charted = array_values(array_filter($statistics, fn ($field) => $field->isChartable)))
+            @php($textFields = array_values(array_filter($statistics, fn ($field) => ! $field->isChartable)))
             <div class="ffb-results-grid">
-                @foreach ($statistics as $field)
+                @foreach ($charted as $field)
                     <div @class(['ffb-results-card', 'ffb-results-card--wide' => $field->nps !== null])>
                         <x-filament::section :heading="$field->label" :description="$t('answered', ['answered' => $field->answered, 'total' => $field->total])">
                             @if ($field->average !== null)
@@ -133,6 +135,19 @@
                     </div>
                 @endforeach
             </div>
+
+            @if ($textFields !== [])
+                <x-filament::section :heading="$t('text_answers_heading')" icon="heroicon-o-chat-bubble-left-ellipsis" :description="$t('text_answers_description')">
+                    <ul class="ffb-results-text-list">
+                        @foreach ($textFields as $field)
+                            <li>
+                                <span class="ffb-results-text-label">{{ $field->label }}</span>
+                                <span class="ffb-results-text-count">{{ $t('answered', ['answered' => $field->answered, 'total' => $field->total]) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-filament::section>
+            @endif
         @endif
     </div>
 </x-filament-panels::page>

@@ -104,3 +104,14 @@ it('links a lead only when the host app tells how', function (): void {
     expect(SubmissionLinks::leadUrl(5))->toBe('/leads/5')
         ->and(SubmissionLinks::leadUrl(null))->toBeNull();
 });
+
+it('names the contact fields of a form', function (): void {
+    $form = summaryForm([
+        ['type' => FormFieldBlueprint::TYPE_TEXT, 'data' => ['name' => 'first_name', 'label' => 'Név']],
+        ['type' => FormFieldBlueprint::TYPE_EMAIL, 'data' => ['name' => 'email', 'label' => 'Email']],
+        ['type' => FormFieldBlueprint::TYPE_PHONE, 'data' => ['name' => 'tel', 'label' => 'Telefon']],
+        ['type' => FormFieldBlueprint::TYPE_TEXT, 'data' => ['name' => 'subject', 'label' => 'Tárgy']],
+    ]);
+
+    expect(SubmissionDataPresenter::contactKeys(FormFieldBlueprint::fromForm($form)))->toBe(['first_name', 'email', 'tel']);
+});

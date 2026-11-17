@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.2] - 2026-11-17
+
+### Changed
+- Results page: the submitter's name, e-mail and phone fields are no longer shown as result cards; text fields are
+  listed in one compact "Text answers" section at the bottom.
+- The "Average rating" card uses a non-NPS rating field (the NPS question has its own card).
+
+### Added
+- `SubmissionDataPresenter::contactKeys()`.
+
 ## [0.9.1] - 2026-11-17
 
 ### Fixed
