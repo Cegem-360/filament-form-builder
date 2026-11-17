@@ -56,7 +56,7 @@ final class InboundSubmissionController extends Controller
 
         $formData = [];
         foreach ($blueprints as $blueprint) {
-            $formData[$blueprint->key] = $mapped[$blueprint->key] ?? $blueprint->defaultValue();
+            $formData[$blueprint->key] = $blueprint->castValue($mapped[$blueprint->key] ?? $blueprint->defaultValue());
         }
 
         $submission = $submitter->handle($form, $formData, $mappedPayload->unmapped, 'inbound');

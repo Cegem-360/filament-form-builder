@@ -1,0 +1,101 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Pages;
+
+use Filament\Actions\Action;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Resources\Pages\Page;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\Url;
+use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\RegistrationFormResource;
+use Madbox99\FilamentFormBuilder\Models\FormSubmission;
+use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
+use Madbox99\FilamentFormBuilder\Support\SubmissionStatistics;
+use Madbox99\FilamentFormBuilder\ValueObjects\FieldStatistics;
+use Override;
+
+/**
+ * Per-field results of one form: answer distribution, averages and, for a
+ * 0–10 rating, NPS. Optionally limited to a submission date range.
+ *
+ * @property RegistrationForm $record
+ */
+class FormResults extends Page
+{
+    use InteractsWithRecord;
+
+    protected static string $resource = RegistrationFormResource::class;
+
+    protected string $view = 'filament-form-builder::pages.form-results';
+
+    #[Url]
+    public ?string $from = null;
+
+    #[Url]
+    public ?string $until = null;
+
+    public function mount(int|string $record): void
+    {
+        $this->record = $this->resolveRecord($record);
+
+        $this->authorizeAccess();
+    }
+
+    protected function authorizeAccess(): void
+    {
+        abort_unless(static::getResource()::canEdit($this->getRecord()), 403);
+    }
+
+    #[Override]
+    public function getTitle(): string|Htmlable
+    {
+        return __('filament-form-builder::form.results.title', ['form' => $this->getRecord()->name]);
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament-form-builder::form.results.navigation_label');
+    }
+
+    /**
+     * @return list<FieldStatistics>
+     */
+    public function getStatistics(): array
+    {
+        return SubmissionStatistics::forForm($this->getRecord(), $this->submissionsQuery());
+    }
+
+    /**
+     * @return Builder<FormSubmission>
+     */
+    private function submissionsQuery(): Builder
+    {
+        /** @var RegistrationForm $form */
+        $form = $this->getRecord();
+
+        return $form->submissions()->getQuery()
+            ->when(self::validDate($this->from), fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '>=', $date))
+            ->when(self::validDate($this->until), fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '<=', $date));
+    }
+
+    private static function validDate(?string $value): ?string
+    {
+        return is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1 ? $value : null;
+    }
+
+    #[Override]
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('edit')
+                ->label(__('filament-form-builder::form.results.edit_form'))
+                ->icon(Heroicon::OutlinedPencilSquare)
+                ->color('gray')
+                ->url(fn (): string => RegistrationFormResource::getUrl('edit', ['record' => $this->getRecord()])),
+        ];
+    }
+}

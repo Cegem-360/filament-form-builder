@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Icons\Heroicon;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\RegistrationFormResource;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Override;
@@ -21,6 +22,11 @@ class EditRegistrationForm extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('results')
+                ->label(__('filament-form-builder::form.results.navigation_label'))
+                ->icon(Heroicon::OutlinedChartBar)
+                ->color('gray')
+                ->url(fn (): string => RegistrationFormResource::getUrl('results', ['record' => $this->getRecord()])),
             Action::make('embedCode')
                 ->label(__('filament-form-builder::form.actions.embed_code'))
                 ->color('info')

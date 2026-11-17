@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace Madbox99\FilamentFormBuilder\Filament\Resources\FormSubmissions\Tables;
 
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
 
@@ -40,6 +46,40 @@ final class FormSubmissionsTable
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                SelectFilter::make('registration_form_id')
+                    ->label(__('filament-form-builder::form.fields.form'))
+                    ->relationship('registrationForm', 'name')
+                    ->searchable()
+                    ->preload(),
+                Filter::make('created_at')
+                    ->schema([
+                        DatePicker::make('from')->label(__('filament-form-builder::form.filters.from')),
+                        DatePicker::make('until')->label(__('filament-form-builder::form.filters.until')),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '<=', $date)))
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['from'] ?? null) {
+                            $indicators[] = Indicator::make(__('filament-form-builder::form.filters.from').': '.$data['from'])->removeField('from');
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators[] = Indicator::make(__('filament-form-builder::form.filters.until').': '.$data['until'])->removeField('until');
+                        }
+
+                        return $indicators;
+                    }),
+                TernaryFilter::make('has_lead')
+                    ->label(__('filament-form-builder::form.filters.has_lead'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query->whereNotNull('lead_id'),
+                        false: fn (Builder $query): Builder => $query->whereNull('lead_id'),
+                    ),
+            ])
             ->recordActions([
                 ViewAction::make(),
             ])

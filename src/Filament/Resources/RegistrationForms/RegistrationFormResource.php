@@ -11,6 +11,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Pages\CreateRegistrationForm;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Pages\EditRegistrationForm;
+use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Pages\FormResults;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Pages\ListRegistrationForms;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Schemas\RegistrationFormForm;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Tables\RegistrationFormsTable;
@@ -71,6 +72,7 @@ class RegistrationFormResource extends Resource
             'index' => ListRegistrationForms::route('/'),
             'create' => CreateRegistrationForm::route('/create'),
             'edit' => EditRegistrationForm::route('/{record}/edit'),
+            'results' => FormResults::route('/{record}/results'),
         ];
     }
 }

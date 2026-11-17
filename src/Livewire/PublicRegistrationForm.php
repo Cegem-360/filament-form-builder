@@ -254,7 +254,7 @@ final class PublicRegistrationForm extends Component
         $normalised = [];
 
         foreach ($this->blueprints() as $blueprint) {
-            $normalised[$blueprint->key] = $this->formData[$blueprint->key] ?? $blueprint->defaultValue();
+            $normalised[$blueprint->key] = $blueprint->castValue($this->formData[$blueprint->key] ?? $blueprint->defaultValue());
         }
 
         return $normalised;

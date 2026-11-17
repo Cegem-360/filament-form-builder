@@ -12,6 +12,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\RegistrationFormResource;
 use Madbox99\FilamentFormBuilder\Filament\Resources\RegistrationForms\Tables\Actions\ExportFormAction;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 
@@ -43,6 +44,11 @@ final class RegistrationFormsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
+                Action::make('results')
+                    ->label(__('filament-form-builder::form.results.navigation_label'))
+                    ->icon(Heroicon::OutlinedChartBar)
+                    ->color('gray')
+                    ->url(fn (RegistrationForm $record): string => RegistrationFormResource::getUrl('results', ['record' => $record])),
                 Action::make('preview')
                     ->label(__('filament-form-builder::form.actions.preview'))
                     ->icon(Heroicon::Eye)

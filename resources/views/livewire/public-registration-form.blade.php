@@ -155,6 +155,26 @@
                                 </div>
                                 @break
 
+                            @case(FormFieldBlueprint::TYPE_RATING)
+                                <div class="ffb-rating" role="radiogroup" aria-labelledby="{{ $inputId }}-label">
+                                    @for ($score = (int) $blueprint->min; $score <= (int) $blueprint->max; $score++)
+                                        @php $optionId = $inputId.'-'.$score; @endphp
+                                        <label class="ffb-rating-option" for="{{ $optionId }}">
+                                            <input
+                                                id="{{ $optionId }}"
+                                                type="radio"
+                                                class="ffb-rating-input"
+                                                name="{{ $inputId }}"
+                                                value="{{ $score }}"
+                                                wire:model.blur="formData.{{ $blueprint->key }}"
+                                                @if ($blueprint->required) required @endif
+                                            />
+                                            <span class="ffb-rating-label">{{ $score }}</span>
+                                        </label>
+                                    @endfor
+                                </div>
+                                @break
+
                             @case(FormFieldBlueprint::TYPE_DATE)
                                 <input
                                     id="{{ $inputId }}"
