@@ -115,6 +115,12 @@ return [
         'no' => 'No',
     ],
     'submission_view' => [
+        'title_fallback' => 'Submission #:id',
+        'reply' => 'Reply by e-mail',
+        'contact' => 'Contact',
+        'no_email' => 'No e-mail address',
+        'no_phone' => 'No phone number',
+        'lead_number_short' => '#',
         'answers' => 'Answers',
         'submitter' => 'Submitter',
         'name' => 'Name',

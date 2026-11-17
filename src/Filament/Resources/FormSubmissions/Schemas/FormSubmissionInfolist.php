@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Madbox99\FilamentFormBuilder\Filament\Resources\FormSubmissions\Schemas;
 
-use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
@@ -18,8 +19,9 @@ use Madbox99\FilamentFormBuilder\Support\SubmissionDataPresenter;
 use Madbox99\FilamentFormBuilder\Support\SubmissionLinks;
 
 /**
- * Submission page, most useful first: who sent it, what they answered, where
- * it came from; the technical details are collapsed at the bottom.
+ * Submission page: the answers take the wide column (long messages read like
+ * a message, short answers as a tidy label/value list); contact details,
+ * origin and the technical details sit in a narrow side column.
  */
 final class FormSubmissionInfolist
 {
@@ -29,84 +31,86 @@ final class FormSubmissionInfolist
 
         return $schema
             ->components([
-                Section::make($t('submitter'))
-                    ->icon(Heroicon::OutlinedUser)
-                    ->headerActions([
-                        Action::make('openLead')
-                            ->label($t('open_lead'))
-                            ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
-                            ->url(fn (FormSubmission $record): ?string => SubmissionLinks::leadUrl($record->lead_id))
-                            ->visible(fn (FormSubmission $record): bool => SubmissionLinks::leadUrl($record->lead_id) !== null),
-                    ])
+                Grid::make(['default' => 1, 'lg' => 3])
+                    ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('submitter_name')
-                            ->label($t('name'))
-                            ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['name'])
-                            ->size(TextSize::Large)
-                            ->weight(FontWeight::SemiBold)
-                            ->placeholder('—')
-                            ->columnSpanFull(),
-                        TextEntry::make('submitter_email')
-                            ->label($t('email'))
-                            ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['email'])
-                            ->icon(Heroicon::OutlinedEnvelope)
-                            ->url(fn (?string $state): ?string => $state !== null ? 'mailto:'.$state : null)
-                            ->copyable()
-                            ->placeholder('—'),
-                        TextEntry::make('submitter_phone')
-                            ->label($t('phone'))
-                            ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['phone'])
-                            ->icon(Heroicon::OutlinedPhone)
-                            ->url(fn (?string $state): ?string => $state !== null ? 'tel:'.preg_replace('/[^\d+]/', '', $state) : null)
-                            ->copyable()
-                            ->placeholder('—'),
-                        TextEntry::make('registrationForm.name')
-                            ->label(__('filament-form-builder::form.fields.form'))
-                            ->badge(),
-                        TextEntry::make('created_at')
-                            ->label(__('filament-form-builder::form.fields.submitted_at'))
-                            ->dateTime()
-                            ->since()
-                            ->dateTimeTooltip(),
-                    ])
-                    ->columns(2),
+                        Group::make([
+                            Section::make(__('filament-form-builder::form.sections.submitted_data'))
+                                ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
+                                ->schema(fn (?FormSubmission $record): array => $record instanceof FormSubmission
+                                    ? self::answerEntries($record)
+                                    : []),
+                        ])->columnSpan(['lg' => 2]),
 
-                Section::make(__('filament-form-builder::form.sections.submitted_data'))
-                    ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
-                    ->schema(fn (?FormSubmission $record): array => $record instanceof FormSubmission
-                        ? self::answerEntries($record)
-                        : [])
-                    ->columns(2),
+                        Group::make([
+                            Section::make($t('contact'))
+                                ->icon(Heroicon::OutlinedUser)
+                                ->schema([
+                                    TextEntry::make('submitter_name')
+                                        ->hiddenLabel()
+                                        ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['name'])
+                                        ->size(TextSize::Large)
+                                        ->weight(FontWeight::SemiBold)
+                                        ->visible(fn (FormSubmission $record): bool => SubmissionDataPresenter::contact($record)['name'] !== null),
+                                    TextEntry::make('submitter_email')
+                                        ->hiddenLabel()
+                                        ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['email'])
+                                        ->icon(Heroicon::OutlinedEnvelope)
+                                        ->url(fn (?string $state): ?string => $state !== null ? 'mailto:'.$state : null)
+                                        ->color('primary')
+                                        ->copyable()
+                                        ->placeholder($t('no_email')),
+                                    TextEntry::make('submitter_phone')
+                                        ->hiddenLabel()
+                                        ->state(fn (FormSubmission $record): ?string => SubmissionDataPresenter::contact($record)['phone'])
+                                        ->icon(Heroicon::OutlinedPhone)
+                                        ->url(fn (?string $state): ?string => $state !== null ? 'tel:'.preg_replace('/[^\d+]/', '', $state) : null)
+                                        ->copyable()
+                                        ->placeholder($t('no_phone')),
+                                    TextEntry::make('lead_id')
+                                        ->label(__('filament-form-builder::form.fields.lead'))
+                                        ->inlineLabel()
+                                        ->formatStateUsing(fn (int|string $state): string => $t('lead_number_short').$state)
+                                        ->url(fn (FormSubmission $record): ?string => SubmissionLinks::leadUrl($record->lead_id))
+                                        ->color(fn (FormSubmission $record): ?string => SubmissionLinks::leadUrl($record->lead_id) !== null ? 'primary' : null)
+                                        ->placeholder('—'),
+                                ]),
 
-                Section::make($t('origin'))
-                    ->icon(Heroicon::OutlinedGlobeAlt)
-                    ->visible(fn (?FormSubmission $record): bool => $record instanceof FormSubmission && SubmissionDataPresenter::origin($record) !== null)
-                    ->schema(fn (?FormSubmission $record): array => $record instanceof FormSubmission
-                        ? self::originEntries($record)
-                        : [])
-                    ->columns(2),
+                            Section::make($t('origin'))
+                                ->icon(Heroicon::OutlinedGlobeAlt)
+                                ->visible(fn (?FormSubmission $record): bool => $record instanceof FormSubmission && SubmissionDataPresenter::origin($record) !== null)
+                                ->schema(fn (?FormSubmission $record): array => $record instanceof FormSubmission
+                                    ? self::originEntries($record)
+                                    : []),
 
-                Section::make($t('technical'))
-                    ->icon(Heroicon::OutlinedCog6Tooth)
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        TextEntry::make('id')->label('ID'),
-                        TextEntry::make('ip_address')
-                            ->label(__('filament-form-builder::form.fields.ip_address'))
-                            ->placeholder('—'),
-                        TextEntry::make('user_agent')
-                            ->label(__('filament-form-builder::form.fields.user_agent'))
-                            ->placeholder('—')
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+                            Section::make($t('technical'))
+                                ->icon(Heroicon::OutlinedCog6Tooth)
+                                ->collapsible()
+                                ->collapsed()
+                                ->schema([
+                                    TextEntry::make('id')->label('ID')->inlineLabel(),
+                                    TextEntry::make('created_at')
+                                        ->label(__('filament-form-builder::form.fields.submitted_at'))
+                                        ->inlineLabel()
+                                        ->dateTime(),
+                                    TextEntry::make('ip_address')
+                                        ->label(__('filament-form-builder::form.fields.ip_address'))
+                                        ->inlineLabel()
+                                        ->placeholder('—'),
+                                    TextEntry::make('user_agent')
+                                        ->label(__('filament-form-builder::form.fields.user_agent'))
+                                        ->placeholder('—')
+                                        ->size(TextSize::ExtraSmall)
+                                        ->color('gray'),
+                                ]),
+                        ])->columnSpan(['lg' => 1]),
+                    ]),
             ]);
     }
 
     /**
-     * One labelled entry per answered field, in the form's field order; the
-     * submitter's contact details are shown above, not repeated here.
+     * Long answers (textareas) read like a message, full width and with their
+     * line breaks; the rest is a label/value list.
      *
      * @return list<TextEntry>
      */
@@ -121,15 +125,14 @@ final class FormSubmissionInfolist
                 ->placeholder('—');
 
             if (is_array($row['value'])) {
-                $entry->badge();
-            }
-
-            if ($row['type'] === FormFieldBlueprint::TYPE_TEXTAREA && is_string($row['value'])) {
-                $entry->formatStateUsing(fn (string $state): HtmlString => new HtmlString(nl2br(e($state))))->html();
-            }
-
-            if ($row['width'] === FormFieldBlueprint::WIDTH_FULL) {
-                $entry->columnSpanFull();
+                $entry->badge()->inlineLabel();
+            } elseif ($row['type'] === FormFieldBlueprint::TYPE_TEXTAREA && is_string($row['value'])) {
+                $entry->formatStateUsing(fn (string $state): HtmlString => new HtmlString(nl2br(e($state))))
+                    ->html()
+                    ->size(TextSize::Medium)
+                    ->extraAttributes(['class' => 'ffb-submission-message']);
+            } else {
+                $entry->inlineLabel()->weight(FontWeight::Medium);
             }
 
             $entries[] = $entry;
@@ -139,8 +142,7 @@ final class FormSubmissionInfolist
             $entries[] = TextEntry::make('no_answers')
                 ->hiddenLabel()
                 ->state(__('filament-form-builder::form.submission_view.no_answers'))
-                ->color('gray')
-                ->columnSpanFull();
+                ->color('gray');
         }
 
         return $entries;
@@ -165,6 +167,7 @@ final class FormSubmissionInfolist
                 ->state($origin['page_title'] ?? $origin['page_url'])
                 ->url($origin['page_url'])
                 ->openUrlInNewTab()
+                ->color($origin['page_url'] !== null ? 'primary' : null)
                 ->icon($origin['page_url'] !== null ? Heroicon::OutlinedArrowTopRightOnSquare : null)
                 ->iconPosition('after')
                 ->placeholder('—'),
