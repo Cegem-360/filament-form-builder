@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Madbox99\FilamentFormBuilder\Support;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Madbox99\FilamentFormBuilder\Models\FormSubmission;
 use Madbox99\FilamentFormBuilder\Models\RegistrationForm;
 use Madbox99\FilamentFormBuilder\ValueObjects\FieldStatistics;
@@ -266,6 +267,43 @@ final class SubmissionStatistics
         $format = static fn (int|float $n): string => rtrim(rtrim(number_format(round($n, 2), 2, '.', ''), '0'), '.');
 
         return $format($from).' – '.$format($to);
+    }
+
+    /**
+     * Submissions per day between the first and the last one, empty days as 0.
+     *
+     * @param  Builder<FormSubmission>  $submissions
+     * @return array<string, int> Y-m-d ⇒ count
+     */
+    public static function timeline(Builder $submissions): array
+    {
+        $perDay = [];
+
+        $submissions->clone()->reorder()->setEagerLoads([])->select(['id', 'created_at'])->chunkById(1000, function ($chunk) use (&$perDay): void {
+            foreach ($chunk as $submission) {
+                $day = $submission->created_at?->toDateString();
+
+                if ($day !== null) {
+                    $perDay[$day] = ($perDay[$day] ?? 0) + 1;
+                }
+            }
+        });
+
+        if ($perDay === []) {
+            return [];
+        }
+
+        ksort($perDay);
+        $filled = [];
+        $day = Carbon::parse(array_key_first($perDay));
+        $last = Carbon::parse(array_key_last($perDay));
+
+        while ($day->lte($last)) {
+            $filled[$day->toDateString()] = $perDay[$day->toDateString()] ?? 0;
+            $day = $day->addDay();
+        }
+
+        return $filled;
     }
 
     /**

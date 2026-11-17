@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0] - 2026-11-17
+
+### Changed
+- Results page redesigned with Chart.js charts (Filament `ChartWidget`): quick ranges (7/30/90 days, all), KPI cards
+  (submissions, NPS, average rating, completion), submissions-per-day line chart, doughnut for single-choice fields
+  with up to 4 options, horizontal bars for longer lists and checkbox lists, rating histograms coloured by NPS group
+  (0–10) or a red→green ramp, NPS doughnut with the score in the middle.
+
+### Added
+- `ResultCharts` (chart configurations), `SubmissionStatistics::timeline()`, `Filament\Widgets\ResultChart`.
+
 ## [0.8.0] - 2026-11-17
 
 ### Changed
