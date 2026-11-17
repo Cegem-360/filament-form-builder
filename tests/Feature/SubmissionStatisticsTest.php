@@ -150,3 +150,53 @@ it('only counts the submissions in the given query', function (): void {
     expect($stats[0]->total)->toBe(1)
         ->and($stats[0]->average)->toBe(8.0);
 });
+
+it('keeps two options with the same label apart', function (): void {
+    $stats = statsFor(
+        [['type' => FormFieldBlueprint::TYPE_RADIO, 'data' => ['name' => 'r', 'label' => 'R', 'options' => [
+            ['label' => 'Same', 'value' => 'one'], ['label' => 'Same', 'value' => 'two'],
+        ]]]],
+        [['r' => 'one'], ['r' => 'two'], ['r' => 'two']],
+    )['r'];
+
+    expect($stats->distribution)->toBe(['Same (one)' => 1, 'Same (two)' => 2]);
+});
+
+it('does not merge a removed option into an option whose label equals its value', function (): void {
+    $stats = statsFor(
+        [['type' => FormFieldBlueprint::TYPE_SELECT, 'data' => ['name' => 's', 'label' => 'S', 'options' => [
+            ['label' => 'b', 'value' => 'a'],
+        ]]]],
+        [['s' => 'a'], ['s' => 'b']],
+    )['s'];
+
+    expect($stats->distribution)->toBe(['b' => 1, 'b (b)' => 1]);
+});
+
+it('sorts rating answers outside the current scale into place', function (): void {
+    $stats = statsFor(
+        [['type' => FormFieldBlueprint::TYPE_RATING, 'data' => ['name' => 'q', 'label' => 'Q', 'min' => 1, 'max' => 3]]],
+        [['q' => 0], ['q' => 2]],
+    )['q'];
+
+    expect(array_map('strval', array_keys($stats->distribution)))->toBe(['0', '1', '2', '3']);
+});
+
+it('groups a number field with many distinct values into ranges', function (): void {
+    $stats = statsFor(
+        [['type' => FormFieldBlueprint::TYPE_NUMBER, 'data' => ['name' => 'n', 'label' => 'N']]],
+        array_map(fn (int $i): array => ['n' => $i], range(1, 100)),
+    )['n'];
+
+    expect($stats->distribution)->toHaveCount(10)
+        ->and(array_key_first($stats->distribution))->toBe('1 – 10.9')
+        ->and(array_sum($stats->distribution))->toBe(100)
+        ->and($stats->average)->toBe(50.5);
+});
+
+it('reports the submission total of a form without valid fields', function (): void {
+    $form = RegistrationForm::factory()->create(['fields' => []]);
+    FormSubmission::factory()->for($form)->create(['data' => ['x' => 'y']]);
+
+    expect(SubmissionStatistics::total($form->submissions()->getQuery()))->toBe(1);
+});

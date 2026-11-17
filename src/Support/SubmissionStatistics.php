@@ -22,6 +22,10 @@ final class SubmissionStatistics
         FormFieldBlueprint::TYPE_CHECKBOX,
     ];
 
+    private const int MAX_NUMBER_BARS = 20;
+
+    private const int NUMBER_BUCKETS = 10;
+
     private const array NUMERIC_TYPES = [
         FormFieldBlueprint::TYPE_NUMBER,
         FormFieldBlueprint::TYPE_RATING,
@@ -43,7 +47,7 @@ final class SubmissionStatistics
 
         $total = 0;
 
-        $submissions->clone()->reorder()->select(['id', 'data'])->chunkById(500, function ($chunk) use ($blueprints, &$tally, &$total): void {
+        $submissions->clone()->reorder()->setEagerLoads([])->select(['id', 'data'])->chunkById(500, function ($chunk) use ($blueprints, &$tally, &$total): void {
             foreach ($chunk as $submission) {
                 $total++;
                 $data = is_array($submission->data) ? $submission->data : [];
@@ -80,7 +84,7 @@ final class SubmissionStatistics
 
         $counts = [];
         foreach ($blueprint->options as $option) {
-            $counts[$option['label']] = 0;
+            $counts[$option['value']] = 0;
         }
 
         return $counts;
@@ -129,8 +133,7 @@ final class SubmissionStatistics
 
             $tally['answered']++;
             foreach ($values as $item) {
-                $label = self::optionLabel($blueprint, $item);
-                $tally['counts'][$label] = ($tally['counts'][$label] ?? 0) + 1;
+                $tally['counts'][$item] = ($tally['counts'][$item] ?? 0) + 1;
             }
 
             return;
@@ -150,8 +153,16 @@ final class SubmissionStatistics
         $isNumeric = in_array($blueprint->type, self::NUMERIC_TYPES, true);
         $counts = $tally['counts'];
 
-        if ($blueprint->type === FormFieldBlueprint::TYPE_NUMBER) {
-            uksort($counts, static fn (string $a, string $b): int => (float) $a <=> (float) $b);
+        if ($isNumeric) {
+            uksort($counts, static fn (int|string $a, int|string $b): int => (float) $a <=> (float) $b);
+        }
+
+        if ($blueprint->type === FormFieldBlueprint::TYPE_NUMBER && count($counts) > self::MAX_NUMBER_BARS) {
+            $counts = self::buckets($numbers);
+        }
+
+        if (in_array($blueprint->type, [FormFieldBlueprint::TYPE_SELECT, FormFieldBlueprint::TYPE_RADIO, FormFieldBlueprint::TYPE_CHECKBOX_LIST], true)) {
+            $counts = self::labelChoiceCounts($blueprint, $counts);
         }
 
         return new FieldStatistics(
@@ -190,15 +201,79 @@ final class SubmissionStatistics
         ];
     }
 
-    private static function optionLabel(FormFieldBlueprint $blueprint, string $value): string
+    /**
+     * Turns value-keyed counts into label-keyed ones without merging bars:
+     * options sharing a label get their value appended, and a value no longer
+     * on the form keeps its raw value (with the value appended on a clash).
+     *
+     * @param  array<int|string, int>  $counts
+     * @return array<string, int>
+     */
+    private static function labelChoiceCounts(FormFieldBlueprint $blueprint, array $counts): array
     {
+        $labelUse = array_count_values(array_map(static fn (array $option): string => $option['label'], $blueprint->options));
+
+        $labels = [];
         foreach ($blueprint->options as $option) {
-            if ($option['value'] === $value) {
-                return $option['label'];
-            }
+            $labels[$option['value']] = $labelUse[$option['label']] > 1
+                ? $option['label'].' ('.$option['value'].')'
+                : $option['label'];
         }
 
-        return $value;
+        $labelled = [];
+        foreach ($counts as $value => $count) {
+            $value = (string) $value;
+            $label = $labels[$value] ?? $value;
+
+            if (! isset($labels[$value]) && (isset($labelled[$label]) || in_array($label, $labels, true))) {
+                $label .= ' ('.$value.')';
+            }
+
+            $labelled[$label] = ($labelled[$label] ?? 0) + $count;
+        }
+
+        return $labelled;
+    }
+
+    /**
+     * Equal-width ranges for a number field with too many distinct values to
+     * draw one bar each.
+     *
+     * @param  list<int|float>  $numbers
+     * @return array<string, int>
+     */
+    private static function buckets(array $numbers): array
+    {
+        $min = min($numbers);
+        $width = (max($numbers) - $min) / self::NUMBER_BUCKETS;
+
+        $counts = [];
+        for ($i = 0; $i < self::NUMBER_BUCKETS; $i++) {
+            $counts[self::rangeLabel($min + $i * $width, $min + ($i + 1) * $width)] = 0;
+        }
+
+        $labels = array_keys($counts);
+        foreach ($numbers as $number) {
+            $index = $width > 0 ? min(self::NUMBER_BUCKETS - 1, (int) floor(($number - $min) / $width)) : 0;
+            $counts[$labels[$index]]++;
+        }
+
+        return $counts;
+    }
+
+    private static function rangeLabel(int|float $from, int|float $to): string
+    {
+        $format = static fn (int|float $n): string => rtrim(rtrim(number_format(round($n, 2), 2, '.', ''), '0'), '.');
+
+        return $format($from).' – '.$format($to);
+    }
+
+    /**
+     * @param  Builder<FormSubmission>  $submissions
+     */
+    public static function total(Builder $submissions): int
+    {
+        return $submissions->clone()->reorder()->count();
     }
 
     private static function number(mixed $value): int|float

@@ -28,13 +28,14 @@ final class SubmissionExportRow
     }
 
     /**
+     * @param  list<FormFieldBlueprint>|null  $blueprints
      * @return array<string, string> field key ⇒ cell; payload keys not on the form keep their raw key
      */
-    public static function values(FormSubmission $submission): array
+    public static function values(FormSubmission $submission, ?array $blueprints = null): array
     {
         $values = [];
 
-        foreach (SubmissionDataPresenter::rows($submission) as $row) {
+        foreach (SubmissionDataPresenter::rows($submission, $blueprints) as $row) {
             $values[$row['key']] = self::cell($row['value']);
         }
 
@@ -43,12 +44,14 @@ final class SubmissionExportRow
 
     /**
      * All answers as one "Label: value | …" string, for exports that mix forms.
+     *
+     * @param  list<FormFieldBlueprint>|null  $blueprints
      */
-    public static function summary(FormSubmission $submission): string
+    public static function summary(FormSubmission $submission, ?array $blueprints = null): string
     {
         $parts = [];
 
-        foreach (SubmissionDataPresenter::rows($submission) as $row) {
+        foreach (SubmissionDataPresenter::rows($submission, $blueprints) as $row) {
             $cell = self::cell($row['value']);
 
             if ($cell !== '') {

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.1] - 2026-11-17
+
+### Fixed
+- Results: two options with the same label are no longer merged into one bar; a removed option whose value equals
+  another option's label stays separate.
+- Results: old rating answers outside the current scale are sorted into place.
+- Results: number fields with more than 20 distinct values are grouped into 10 ranges.
+- Results: the submission count no longer depends on the form having valid fields.
+- Results: promoter/detractor colours in dark mode; the Results row action is only shown to users who can edit.
+- Export: answers of fields removed from the form get their own columns; the separator follows the app locale
+  (`;` for hu/de/fr…, `,` for en) and can be set with `filament-form-builder.export.csv_separator`; form fields
+  are parsed once per export instead of once per row; works with eager-loaded, column-limited queries.
+- An empty optional rating is stored as `null`.
+
 ## [0.7.0] - 2026-11-17
 
 ### Added

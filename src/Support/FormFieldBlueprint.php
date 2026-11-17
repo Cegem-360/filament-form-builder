@@ -296,8 +296,8 @@ final readonly class FormFieldBlueprint
      */
     public function castValue(mixed $value): mixed
     {
-        if ($this->type === self::TYPE_RATING && is_numeric($value)) {
-            return (int) $value;
+        if ($this->type === self::TYPE_RATING) {
+            return is_numeric($value) ? (int) $value : null;
         }
 
         return $value;

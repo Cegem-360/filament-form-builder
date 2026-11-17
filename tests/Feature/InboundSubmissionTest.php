@@ -233,3 +233,14 @@ it('rejects a rating outside the scale', function (): void {
 
     $this->postJson($form->getInboundUrl(), ['score' => '11'])->assertUnprocessable();
 });
+
+it('stores an empty optional rating as null', function (): void {
+    $form = inboundForm(['fields' => [
+        ['type' => 'email', 'data' => ['name' => 'email', 'label' => 'Email', 'required' => true]],
+        ['type' => 'rating', 'data' => ['name' => 'score', 'label' => 'Score']],
+    ]]);
+
+    $this->postJson($form->getInboundUrl(), ['email' => 'anna@example.com', 'score' => ''])->assertCreated();
+
+    expect(FormSubmission::query()->sole()->data['score'])->toBeNull();
+});

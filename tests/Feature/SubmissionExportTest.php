@@ -13,6 +13,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     app()->setLocale('en');
+    config()->set('filament-form-builder.export.csv_separator', ';');
 });
 
 function exportForm(): RegistrationForm
@@ -81,4 +82,36 @@ it('neutralises cells that a spreadsheet would read as a formula', function (): 
     expect(str_getcsv($lines[0], ';')[3])->toBe("'+Phone")
         ->and(str_getcsv($lines[1], ';')[0])->toBe("'=Form")
         ->and(array_slice(str_getcsv($lines[1], ';'), 3))->toBe(["'+36 30 123 4567", "'=HYPERLINK(\"https://evil.example\")"]);
+});
+
+it('adds columns for answers of fields that were removed from the form', function (): void {
+    $form = exportForm();
+    FormSubmission::factory()->for($form)->create(['data' => ['name' => 'Anna', 'old_field' => 'kept']]);
+
+    $lines = explode("\n", trim(substr(SubmissionCsvExport::contents($form->submissions()->getQuery(), $form), 3)));
+
+    expect(str_getcsv($lines[0], ';'))->toContain('old_field')
+        ->and(str_getcsv($lines[1], ';'))->toContain('kept');
+});
+
+it('uses a comma separator for English and a semicolon for Hungarian', function (): void {
+    config()->set('filament-form-builder.export.csv_separator', null);
+    $form = exportForm();
+
+    app()->setLocale('en');
+    $english = SubmissionCsvExport::contents($form->submissions()->getQuery(), $form);
+    app()->setLocale('hu');
+    $hungarian = SubmissionCsvExport::contents($form->submissions()->getQuery(), $form);
+
+    expect(explode("\n", $english)[0])->toContain('Name,Topics,Consent')
+        ->and(explode("\n", $hungarian)[0])->toContain(';');
+});
+
+it('exports from a query that eager loads the form with selected columns', function (): void {
+    $form = exportForm();
+    FormSubmission::factory()->for($form)->create(['data' => ['name' => 'Anna']]);
+
+    $query = $form->submissions()->getQuery()->with('registrationForm:id,name');
+
+    expect(SubmissionCsvExport::contents($query, $form))->toContain('Anna');
 });
